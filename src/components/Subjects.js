@@ -1,0 +1,394 @@
+import { getSubjects, saveDB, getDB, addTopic, deleteTopic, updateSubjectColor } from '../utils/storage.js';
+import { openModal, closeModal } from './Modal.js';
+
+export function renderSubjects() {
+    const subjects = getSubjects();
+
+    return `
+    <div class="max-w-7xl mx-auto space-y-8 animate-fade-in">
+        <header class="flex items-center justify-between">
+            <div>
+                <h2 class="text-3xl font-bold text-white">Subjects & Goals</h2>
+                <p class="text-slate-400">Manage learning paths and track specific topic progress.</p>
+            </div>
+            <button id="btn-add-subject" class="bg-primary hover:bg-indigo-500 shadow-lg shadow-primary/25 text-white px-5 py-3 rounded-2xl flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
+                <span class="material-icons-outlined">add</span>
+                New Subject
+            </button>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            ${subjects.map(sub => renderSubjectCard(sub)).join('')}
+        </div>
+    </div>
+    `;
+}
+
+function renderSubjectCard(sub) {
+    const topicCount = sub.topics ? sub.topics.length : 0;
+    // Calculate total progress for the subject based on topics
+    const totalTarget = sub.topics ? sub.topics.reduce((acc, t) => acc + (t.targetHours || 0), 0) : 0;
+    const totalSpent = sub.topics ? sub.topics.reduce((acc, t) => acc + (t.spentHours || 0), 0) : 0;
+    const progress = totalTarget > 0 ? (totalSpent / totalTarget) * 100 : 0;
+    const cappedProgress = Math.min(100, progress);
+
+    return `
+    <div class="subject-card bg-surface/40 backdrop-blur-md border border-white/5 p-6 rounded-3xl group hover:bg-surface/60 transition-all relative overflow-hidden flex flex-col cursor-pointer" data-id="${sub.id}">
+        <div class="absolute left-0 top-0 bottom-0 w-1.5 transition-colors duration-300" style="background-color: ${sub.color}"></div>
+        
+        <div class="flex items-start justify-between mb-6 pl-3">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-inner transition-colors duration-300" style="background-color: ${sub.color}20; color: ${sub.color}">
+                    ${sub.name.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-100 text-xl leading-tight group-hover:text-white transition-colors">${sub.name}</h3>
+                    <div class="text-xs text-slate-400 mt-1 flex items-center gap-2">
+                         <span class="bg-white/5 px-2 py-0.5 rounded text-slate-300">${topicCount} Topics</span>
+                         <span>${Math.round(totalSpent)}h studied</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0" onclick="event.stopPropagation()">
+                <button class="btn-color-picker w-8 h-8 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors" data-id="${sub.id}" title="Change Color">
+                    <div class="w-3 h-3 rounded-full" style="background-color: ${sub.color}"></div>
+                </button>
+                <button class="btn-delete-sub text-slate-500 hover:text-red-400 w-8 h-8 rounded-full border border-white/10 flex items-center justify-center hover:bg-red-500/10 transition-colors" data-id="${sub.id}" title="Delete Subject">
+                    <span class="material-icons-outlined text-sm">delete</span>
+                </button>
+            </div>
+        </div>
+        
+        <div class="pl-3 mt-auto space-y-4 pointer-events-none">
+            <!-- Progress Bar -->
+            <div>
+                <div class="flex justify-between items-end mb-2">
+                    <span class="text-xs font-medium text-slate-400">Total Progress</span>
+                    <span class="text-xs font-bold text-slate-300">${Math.round(progress)}%</span>
+                </div>
+                <div class="w-full bg-slate-900/50 rounded-full h-2 overflow-hidden border border-white/5">
+                    <div class="h-full rounded-full transition-all duration-1000" style="width: ${cappedProgress}%; background-color: ${sub.color}"></div>
+                </div>
+            </div>
+
+             <!-- Topics Preview Tags -->
+             ${sub.topics && sub.topics.length > 0 ? `
+             <div class="flex flex-wrap gap-2 pt-2">
+                ${sub.topics.slice(0, 3).map(t => `
+                    <span class="text-[10px] px-2 py-1 rounded-lg bg-white/5 text-slate-300 border border-white/5 truncate max-w-[120px] shadow-sm">
+                        ${t.name}
+                    </span>
+                `).join('')}
+                ${sub.topics.length > 3 ? `<span class="text-[10px] px-2 py-1 text-slate-500">+${sub.topics.length - 3}</span>` : ''}
+             </div>
+             ` : '<p class="text-xs text-slate-600 italic pt-2">No topics initialized.</p>'}
+        </div>
+        
+        <div class="absolute bottom-4 right-4 text-xs font-medium text-slate-500 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0 flex items-center gap-1">
+            Manage Details <span class="material-icons-outlined text-xs">arrow_forward</span>
+        </div>
+    </div>
+    `;
+}
+
+export function initSubjectsLogic() {
+    // Add Subject Button
+    const btnAdd = document.getElementById('btn-add-subject');
+    if (btnAdd) {
+        btnAdd.addEventListener('click', openAddSubjectModal);
+    }
+
+    // Card Click (Drill Down)
+    document.querySelectorAll('.subject-card').forEach(card => {
+        card.addEventListener('click', () => {
+            const id = card.dataset.id;
+            openSubjectDetailsModal(id);
+        });
+    });
+
+    // Inline Actions (Stop Propagation handled in HTML, just attach logic)
+    // Delete
+    document.querySelectorAll('.btn-delete-sub').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const id = btn.dataset.id;
+            if (confirm('Delete this subject and all its topics?')) {
+                const db = getDB();
+                db.subjects = db.subjects.filter(s => s.id !== id);
+                saveDB(db);
+                document.dispatchEvent(new CustomEvent('nav-refresh'));
+            }
+        });
+    });
+
+    // Color Picker
+    document.querySelectorAll('.btn-color-picker').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const id = btn.dataset.id;
+            // Quick color cycle or modal? Let's do a simple cycle for "Quick" feeling
+            // Or maybe Open a mini popover? Simplest for now: Cycle 3 colors or open small modal.
+            // Let's reuse the detailed modal logic but just focusing on color? 
+            // Actually, easier to just let them change it in the Drill Down view.
+            // But the user asked for "Color Coding... assign a specific color". 
+            // Let's make this button open a dedicated small modal or just trigger the detail view. 
+            // To be slick, let's open the Detail view but scroll to settings.
+            // For now, let's just trigger the main detail view to avoid complexity.
+            e.stopPropagation();
+            openSubjectDetailsModal(id);
+        });
+    });
+}
+
+function openAddSubjectModal() {
+    openModal(`
+        <div class="bg-surface border border-white/10 p-8 rounded-3xl shadow-2xl w-full max-w-lg">
+             <h3 class="text-2xl font-bold text-white mb-6">Create New Subject</h3>
+             
+             <div class="space-y-6">
+                <!-- Name -->
+                <div>
+                   <label class="block text-sm font-medium text-slate-400 mb-2">Subject Name</label>
+                   <input type="text" id="inp-sub-name" class="w-full bg-slate-900 border border-slate-700/50 rounded-xl p-4 text-white outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-slate-600" placeholder="e.g. Advanced Calculus">
+                </div>
+
+                <!-- Color -->
+                <div>
+                   <label class="block text-sm font-medium text-slate-400 mb-2">Color Code</label>
+                   <div class="flex flex-wrap gap-3">
+                        ${['#6366f1', '#ec4899', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#3b82f6', '#14b8a6'].map((c, i) => `
+                            <button type="button" class="w-8 h-8 rounded-full border-2 border-transparent hover:scale-110 transition-transform color-select ${i === 0 ? 'ring-2 ring-white ring-offset-2 ring-offset-surface' : ''}" style="background-color: ${c}" data-color="${c}"></button>
+                        `).join('')}
+                        <input type="hidden" id="inp-sub-color" value="#6366f1">
+                   </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-6 border-t border-white/5">
+                    <button id="btn-cancel-sub" class="text-slate-400 hover:text-white px-5 py-3 rounded-xl hover:bg-white/5 transition-colors font-medium">Cancel</button>
+                    <button id="btn-save-sub" class="bg-primary hover:bg-indigo-500 text-white px-6 py-3 rounded-xl font-bold transition-all hover:shadow-lg hover:shadow-primary/25">Create Subject</button>
+                </div>
+             </div>
+        </div>
+    `);
+
+    setTimeout(() => {
+        document.getElementById('inp-sub-name').focus();
+        document.getElementById('btn-cancel-sub').addEventListener('click', closeModal);
+
+        const colorInput = document.getElementById('inp-sub-color');
+        document.querySelectorAll('.color-select').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.color-select').forEach(b => b.classList.remove('ring-2', 'ring-white', 'ring-offset-2', 'ring-offset-surface'));
+                btn.classList.add('ring-2', 'ring-white', 'ring-offset-2', 'ring-offset-surface');
+                colorInput.value = btn.dataset.color;
+            });
+        });
+
+        document.getElementById('btn-save-sub').addEventListener('click', () => {
+            const name = document.getElementById('inp-sub-name').value;
+            const color = document.getElementById('inp-sub-color').value;
+
+            if (name) {
+                const db = getDB();
+                db.subjects.push({
+                    id: 'sub_' + Date.now(),
+                    name,
+                    color,
+                    weeklyGoal: 0,
+                    topics: []
+                });
+                saveDB(db);
+                closeModal();
+                document.dispatchEvent(new CustomEvent('nav-refresh'));
+            }
+        });
+    }, 50);
+}
+
+function openSubjectDetailsModal(subjectId) {
+    const db = getDB();
+    const subject = db.subjects.find(s => s.id === subjectId);
+    if (!subject) return;
+
+    const renderTopicList = () => {
+        if (!subject.topics || subject.topics.length === 0) {
+            return `<div class="text-center py-10 text-slate-500 italic border-2 border-dashed border-white/5 rounded-2xl">
+                No topics yet. Add one to start tracking detail!
+            </div>`;
+        }
+
+        return subject.topics.map(t => {
+            const pct = t.targetHours > 0 ? (t.spentHours / t.targetHours) * 100 : 0;
+            return `
+            <div class="flex items-center gap-4 bg-slate-900/30 p-4 rounded-xl border border-white/5 hover:bg-slate-900/50 transition-colors group">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 text-slate-400 font-bold shrink-0">
+                    ${t.name.substring(0, 2).toUpperCase()}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex justify-between items-center mb-1">
+                        <h4 class="font-bold text-slate-200 truncate">${t.name}</h4>
+                        <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                             <button class="text-xs text-red-400 hover:text-red-300 btn-del-topic" data-tid="${t.id}">Delete</button>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="flex-1 bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                            <div class="h-full rounded-full bg-${subject.color} || bg-white" style="width: ${Math.min(100, pct)}%; background-color: ${subject.color}"></div>
+                        </div>
+                        <span class="text-xs font-mono text-slate-400 whitespace-nowrap">${Math.round(t.spentHours * 10) / 10} / ${t.targetHours}h</span>
+                    </div>
+                </div>
+            </div>
+            `;
+        }).join('');
+    };
+
+    openModal(`
+        <div class="bg-surface border border-white/10 rounded-3xl shadow-2xl w-full max-w-2xl h-[80vh] flex flex-col">
+             <!-- Header -->
+             <div class="p-8 pb-4 border-b border-white/5 flex justify-between items-start shrink-0">
+                 <div class="flex gap-4">
+                     <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-white font-bold text-3xl shadow-inner" style="background-color: ${subject.color}20; color: ${subject.color}">
+                        ${subject.name.charAt(0).toUpperCase()}
+                     </div>
+                     <div>
+                         <h3 class="text-2xl font-bold text-white">${subject.name}</h3>
+                         <div class="flex items-center gap-2 mt-1">
+                             <div class="w-3 h-3 rounded-full" style="background-color: ${subject.color}"></div>
+                             <span class="text-sm text-slate-400">${subject.topics ? subject.topics.length : 0} Topics Defined</span>
+                         </div>
+                     </div>
+                 </div>
+                 <button id="btn-close-modal" class="text-slate-400 hover:text-white p-2 hover:bg-white/5 rounded-full transition-colors">
+                    <span class="material-icons-outlined">close</span>
+                 </button>
+             </div>
+             
+             <!-- Content -->
+             <div class="flex-1 overflow-y-auto p-8 custom-scrollbar">
+                 <div class="flex items-center justify-between mb-4">
+                     <h4 class="text-lg font-bold text-white">Topics & Progress</h4>
+                     <!-- Add Topic Inline -->
+                 </div>
+                 
+                 <div class="bg-white/5 rounded-2xl p-4 mb-6 border border-white/5 focus-within:ring-2 focus-within:ring-primary/50 transition-all">
+                      <div class="flex items-center gap-3">
+                           <input type="text" id="inp-quick-topic" placeholder="Add new topic..." class="bg-transparent border-none text-white placeholder:text-slate-500 focus:ring-0 flex-1 outline-none font-medium">
+                           <input type="number" id="inp-quick-hours" placeholder="Target Hrs" class="bg-slate-900/50 border border-white/10 rounded-lg text-white text-sm w-24 p-2 outline-none focus:border-primary/50 text-center">
+                           <button id="btn-quick-add" class="bg-white/10 hover:bg-white/20 text-white p-2 rounded-lg transition-colors">
+                                <span class="material-icons-outlined text-sm">add</span>
+                           </button>
+                      </div>
+                 </div>
+                 
+                 <div class="space-y-3" id="topic-list-container">
+                     ${renderTopicList()}
+                 </div>
+             </div>
+             
+             <!-- Footer Options -->
+             <div class="p-6 border-t border-white/5 bg-black/20 shrink-0 flex justify-between items-center">
+                 <div class="text-xs text-slate-500">
+                    Pro Tip: Break down large subjects into smaller chunks (2-5 hours).
+                 </div>
+                 <button class="text-xs text-slate-400 hover:text-primary transition-colors flex items-center gap-1" id="btn-edit-color">
+                     Change Color <span class="material-icons-outlined text-xs">palette</span>
+                 </button>
+             </div>
+        </div>
+    `);
+
+    setTimeout(() => {
+        document.getElementById('btn-close-modal').addEventListener('click', closeModal);
+
+        // Add Topic Logic
+        const handleAdd = () => {
+            const name = document.getElementById('inp-quick-topic').value;
+            const hours = document.getElementById('inp-quick-hours').value;
+
+            if (name && hours) {
+                addTopic(subject.id, name, hours);
+                // Re-render only list part? Or refresh modal?
+                // Refreshing modal requires closing and reopening or manual DOM manipulation.
+                // Let's manual DOM for speed feel.
+                document.getElementById('inp-quick-topic').value = '';
+                document.getElementById('inp-quick-hours').value = '';
+                // We need to re-fetch subject data
+                const newDb = getDB();
+                const newSub = newDb.subjects.find(s => s.id === subject.id);
+                // Use a slight hack to update 'subject' ref if we were strictly binding, but here we just re-call render
+                // Easier to close/refresh navigation, but that's jarring.
+                // Let's implement a 'refreshList' internal function by passing the container.
+
+                // Cheap way: close and reopen (simple but flickery)
+                // Better way: Re-generate HTML and set innerHTML
+
+                const updatedSub = getDB().subjects.find(s => s.id === subjectId);
+
+                const newHtml = updatedSub.topics.map(t => {
+                    const pct = t.targetHours > 0 ? (t.spentHours / t.targetHours) * 100 : 0;
+                    return `
+                    <div class="flex items-center gap-4 bg-slate-900/30 p-4 rounded-xl border border-white/5 hover:bg-slate-900/50 transition-colors group animate-fade-in">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 text-slate-400 font-bold shrink-0">
+                            ${t.name.substring(0, 2).toUpperCase()}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex justify-between items-center mb-1">
+                                <h4 class="font-bold text-slate-200 truncate">${t.name}</h4>
+                                <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                     <button class="text-xs text-red-400 hover:text-red-300 btn-del-topic" data-tid="${t.id}">Delete</button>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="flex-1 bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                                    <div class="h-full rounded-full bg-${updatedSub.color} || bg-white" style="width: ${Math.min(100, pct)}%; background-color: ${updatedSub.color}"></div>
+                                </div>
+                                <span class="text-xs font-mono text-slate-400 whitespace-nowrap">${Math.round(t.spentHours * 10) / 10} / ${t.targetHours}h</span>
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                }).join('');
+
+                document.getElementById('topic-list-container').innerHTML = newHtml;
+                attachDelListeners(); // Re-attach listeners to new elements
+                document.dispatchEvent(new CustomEvent('nav-refresh')); // Update background app
+            }
+        };
+
+        const attachDelListeners = () => {
+            document.querySelectorAll('.btn-del-topic').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // prevent issues
+                    const tid = btn.dataset.tid;
+                    deleteTopic(subject.id, tid);
+                    // Update UI manually again 
+                    const updatedSub = getDB().subjects.find(s => s.id === subjectId);
+                    // Duplicate logic, normally would extract render function.
+                    // For now, trigger refresh
+                    document.getElementById('btn-close-modal').click();
+                    setTimeout(() => openSubjectDetailsModal(subjectId), 50); // flicker refresh
+                });
+            });
+        };
+
+        const btnAddTopic = document.getElementById('btn-quick-add');
+        if (btnAddTopic) btnAddTopic.addEventListener('click', handleAdd);
+
+        attachDelListeners();
+
+        // Color Picker Edit
+        const btnEditColor = document.getElementById('btn-edit-color');
+        btnEditColor.addEventListener('click', () => {
+            // Simple Prompt for now or cycle
+            const colors = ['#6366f1', '#ec4899', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#3b82f6', '#14b8a6'];
+            const currentIdx = colors.indexOf(subject.color);
+            const nextColor = colors[(currentIdx + 1) % colors.length];
+            updateSubjectColor(subject.id, nextColor);
+            // Full refresh
+            closeModal();
+            setTimeout(() => openSubjectDetailsModal(subjectId), 50);
+            document.dispatchEvent(new CustomEvent('nav-refresh'));
+        });
+
+    }, 50);
+}
