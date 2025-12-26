@@ -111,8 +111,8 @@ export function renderDashboard() {
     return `
         <header class="mb-8 flex items-center justify-between animate-fade-in">
             <div>
-                <h2 class="text-3xl font-bold text-white mb-2">Your Study Home</h2>
-                <p class="text-slate-400">Here is your daily progress overview.</p>
+                <h2 class="text-3xl font-bold text-white mb-2">Study Home</h2>
+                <p class="text-slate-400">Peep your daily grind stats, no cap.</p>
             </div>
             
              <div class="hidden md:flex items-center gap-2 bg-white/5 border border-white/5 px-4 py-2 rounded-xl">
@@ -183,8 +183,8 @@ export function renderDashboard() {
                      </h4>
                      <p class="text-emerald-50 text-sm leading-relaxed">
                         ${isGoalMet ?
-            "You've crushed your weekly goal. Maintain your streak!" :
-            "Consistency beats intensity. 20 minutes every day is better than 5 hours once a week."
+            "You absolutely cooked this week, no cap. Keep that streak bussin'!" :
+            "Consistency is lowkey the move. 20 mins daily is a major W compared to a 5-hour crash out once a week."
         }
                      </p>
                  </div>
