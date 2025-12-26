@@ -10,8 +10,20 @@ export function renderDashboard() {
     const sessions = db.sessions || [];
     const settings = db.settings || { weeklyGoal: 10 };
 
-    // Use Global Weekly Goal from Settings
-    const totalGoalHours = settings.weeklyGoal || 10;
+    // Calculate dynamic Weekly Goal from Subjects/Topics
+    let totalGoalHours = 0;
+    subjects.forEach(sub => {
+        if (sub.topics) {
+            sub.topics.forEach(t => {
+                totalGoalHours += (parseFloat(t.targetHours) || 0);
+            });
+        }
+    });
+
+    // Fallback to global setting if no topic goals defined
+    if (totalGoalHours === 0) {
+        totalGoalHours = settings.weeklyGoal || 10;
+    }
 
     // Calculate hours done in last 7 days
     const now = Date.now();
@@ -139,10 +151,7 @@ export function renderDashboard() {
                     <div class="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-xl group-hover:bg-white/20 transition-colors"></div>
                     <div class="relative z-10">
                         <div class="flex justify-between items-start mb-1">
-                            <div class="text-indigo-200 text-sm font-medium">Weekly Goal</div>
-                            <button id="icon-edit-goal" class="text-white/50 hover:text-white transition-colors" title="Edit Goal">
-                                <span class="material-icons-outlined text-sm">edit</span>
-                            </button>
+                            <div class="text-indigo-200 text-sm font-medium">Weekly Goal Status</div>
                         </div>
                         
                         <div class="text-4xl font-bold mb-2 break-words text-wrap flex flex-wrap items-baseline gap-2">
@@ -158,7 +167,7 @@ export function renderDashboard() {
                         
                         <div class="flex justify-between mt-2 text-xs text-indigo-100/80">
                              <span>${Math.round(hoursDone * 10) / 10}h done</span>
-                             <span>Goal: ${totalGoalHours}h</span>
+                             <span>Goal: ${Math.round(totalGoalHours * 10) / 10}h</span>
                         </div>
                     </div>
                  </div>
@@ -186,11 +195,23 @@ export function initDashboardLogic() {
     initGraphLogic();
 
     // Check Goal Met for Confetti
-    // Simple check: get data again or parse.
     const db = getDB();
-    const settings = db.settings || { weeklyGoal: 10 };
+    const subjects = db.subjects || [];
     const sessions = db.sessions || [];
-    const totalGoalHours = settings.weeklyGoal || 10;
+    const settings = db.settings || { weeklyGoal: 10 };
+
+    let totalGoalHours = 0;
+    subjects.forEach(sub => {
+        if (sub.topics) {
+            sub.topics.forEach(t => {
+                totalGoalHours += (parseFloat(t.targetHours) || 0);
+            });
+        }
+    });
+
+    if (totalGoalHours === 0) {
+        totalGoalHours = settings.weeklyGoal || 10;
+    }
 
     const now = Date.now();
     const oneDay = 24 * 60 * 60 * 1000;
@@ -202,10 +223,6 @@ export function initDashboardLogic() {
     const hoursDone = p1Duration / 3600;
 
     if (hoursDone >= totalGoalHours && totalGoalHours > 0) {
-        // Trigger confetti if not already celebrated? 
-        // For now, trigger on load if met. 
-        // To avoid annoyance, maybe chance or check against a 'celebrated' flag?
-        // Let's just fire it once lightly.
         const end = Date.now() + 1000;
         const colors = ['#6366f1', '#10b981'];
 
@@ -230,55 +247,4 @@ export function initDashboardLogic() {
             }
         }());
     }
-
-    const handleEditGoal = () => {
-        const db = getDB();
-        const currentGoal = db.settings?.weeklyGoal || 10;
-
-        openModal(`
-            <div class="bg-surface border border-white/10 p-8 rounded-3xl shadow-2xl w-full max-w-md">
-                 <h3 class="text-2xl font-bold text-white mb-6">Set Weekly Goal</h3>
-                 
-                 <div class="space-y-6">
-                    <div>
-                       <label class="block text-sm font-medium text-slate-400 mb-2">Target Hours per Week</label>
-                       <div class="relative">
-                           <input type="number" id="inp-weekly-goal" min="1" max="168" value="${currentGoal}" class="w-full bg-slate-900 border border-slate-700/50 rounded-xl p-4 pl-4 text-white outline-none focus:ring-2 focus:ring-primary/50 transition-all font-mono text-xl">
-                           <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 font-medium">hrs</span>
-                       </div>
-                       <p class="text-xs text-slate-500 mt-2">Recommended: 10-20 hours for consistent progress.</p>
-                    </div>
-
-                    <div class="flex justify-end gap-3 pt-6 border-t border-white/5">
-                        <button id="btn-cancel-goal" class="text-slate-400 hover:text-white px-5 py-3 rounded-xl hover:bg-white/5 transition-colors font-medium">Cancel</button>
-                        <button id="btn-save-goal" class="bg-primary hover:bg-indigo-500 text-white px-6 py-3 rounded-xl font-bold transition-all hover:shadow-lg hover:shadow-primary/25">Save Goal</button>
-                    </div>
-                 </div>
-            </div>
-        `);
-
-        setTimeout(() => {
-            const inp = document.getElementById('inp-weekly-goal');
-            if (inp) inp.focus();
-
-            const cancel = document.getElementById('btn-cancel-goal');
-            if (cancel) cancel.addEventListener('click', closeModal);
-
-            const save = document.getElementById('btn-save-goal');
-            if (save) save.addEventListener('click', () => {
-                const val = inp.value;
-                const parsed = parseFloat(val);
-                if (!isNaN(parsed) && parsed > 0) {
-                    updateSettings({ weeklyGoal: parsed });
-                    closeModal();
-                    document.dispatchEvent(new CustomEvent('nav-refresh'));
-                } else {
-                    alert("Please enter a valid number of hours.");
-                }
-            });
-        }, 50);
-    };
-
-    const iconEdit = document.getElementById('icon-edit-goal');
-    if (iconEdit) iconEdit.addEventListener('click', handleEditGoal);
 }
