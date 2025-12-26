@@ -148,7 +148,7 @@ function openAddSubjectModal() {
                 <!-- Name -->
                 <div>
                    <label class="block text-sm font-medium text-slate-400 mb-2">Subject Name</label>
-                   <input type="text" id="inp-sub-name" class="w-full bg-slate-900 border border-slate-700/50 rounded-xl p-4 text-white outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-slate-600" placeholder="e.g. Advanced Calculus">
+                   <input type="text" id="inp-sub-name" class="w-full bg-slate-900 border border-slate-700/50 rounded-xl p-4 text-white outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-slate-600" placeholder="e.g. Advanced Calculus" autocomplete="off">
                 </div>
 
                 <!-- Color -->
@@ -271,10 +271,10 @@ function openSubjectDetailsModal(subjectId) {
                  
                  <!-- Enhanced Topic Input UI -->
                  <div class="bg-white/5 rounded-2xl p-2.5 mb-8 border border-white/5 flex items-center gap-3 group focus-within:border-primary/30 transition-colors overflow-hidden">
-                      <input type="text" id="inp-quick-topic" placeholder="Add new topic..." class="bg-transparent border-none text-white placeholder:text-slate-500 focus:ring-0 flex-1 min-w-0 outline-none font-medium px-2">
+                      <input type="text" id="inp-quick-topic" placeholder="Add new topic..." class="bg-transparent border-none text-white placeholder:text-slate-500 focus:ring-0 flex-1 min-w-0 outline-none font-medium px-2" autocomplete="off">
                       
                       <div class="flex items-center bg-slate-900/50 p-1 rounded-xl border border-white/5 shrink-0">
-                           <input type="number" id="inp-quick-hours" placeholder="Target Hrs" class="bg-transparent border-none text-white text-sm w-24 p-1.5 outline-none focus:ring-0 text-center font-mono placeholder:text-slate-600">
+                           <input type="number" id="inp-quick-hours" placeholder="Target Hrs" class="bg-transparent border-none text-white text-sm w-24 p-1.5 outline-none focus:ring-0 text-center font-mono placeholder:text-slate-600" autocomplete="off">
                       </div>
 
                       <button id="btn-quick-add" class="bg-white/10 hover:bg-white/20 text-white w-10 h-10 flex items-center justify-center rounded-xl transition-all hover:scale-105 active:scale-95 shrink-0">
