@@ -46,22 +46,22 @@ async function renderAuth(errorMessage = null) {
                               ${!isLoginMode ? `
                                     <div class="space-y-1 mb-4">
                                           <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] text-left ml-1">Username</label>
-                                          <input type="text" id="auth-username" placeholder="TopStudent" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-primary/50 transition-colors">
+                                          <input type="text" id="auth-username" placeholder="Username" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-primary/50 transition-colors" autocomplete="off">
                                     </div>
                               ` : ''}
 
                               <div class="space-y-1 mb-4">
                                     <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] text-left ml-1">Email Address</label>
-                                    <input type="email" id="auth-email" placeholder="alex@gmail.com" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-primary/50 transition-colors">
+                                    <input type="email" id="auth-email" placeholder="yourname@gmail.com" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-primary/50 transition-colors" autocomplete="off">
                               </div>
 
                               <div class="space-y-1 mb-6">
                                     <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] text-left ml-1">Password</label>
-                                    <input type="password" id="auth-password" placeholder="••••••••" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-primary/50 transition-colors">
+                                    <input type="password" id="auth-password" placeholder="••••••••" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-primary/50 transition-colors" autocomplete="off">
                               </div>
 
                               <button id="btn-auth-submit" class="w-full bg-primary hover:bg-indigo-500 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98]">
-                                    ${isLoginMode ? 'Sign In' : 'Start Your Journey'}
+                                    ${isLoginMode ? 'Log In' : 'Sign Up'}
                               </button>
 
                               <p id="auth-error" class="text-red-400 text-xs mt-4 hidden text-left"></p>
