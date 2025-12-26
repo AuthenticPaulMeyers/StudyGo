@@ -267,17 +267,19 @@ function openSubjectDetailsModal(subjectId) {
              <div class="flex-1 overflow-y-auto p-8 custom-scrollbar">
                  <div class="flex items-center justify-between mb-4">
                      <h4 class="text-lg font-bold text-white">Topics & Progress</h4>
-                     <!-- Add Topic Inline -->
                  </div>
                  
-                 <div class="bg-white/5 rounded-2xl p-4 mb-6 border border-white/5 focus-within:ring-2 focus-within:ring-primary/50 transition-all">
-                      <div class="flex items-center gap-3">
-                           <input type="text" id="inp-quick-topic" placeholder="Add new topic..." class="bg-transparent border-none text-white placeholder:text-slate-500 focus:ring-0 flex-1 outline-none font-medium">
-                           <input type="number" id="inp-quick-hours" placeholder="Target Hrs" class="bg-slate-900/50 border border-white/10 rounded-lg text-white text-sm w-24 p-2 outline-none focus:border-primary/50 text-center">
-                           <button id="btn-quick-add" class="bg-white/10 hover:bg-white/20 text-white p-2 rounded-lg transition-colors">
-                                <span class="material-icons-outlined text-sm">add</span>
-                           </button>
+                 <!-- Enhanced Topic Input UI -->
+                 <div class="bg-white/5 rounded-2xl p-2.5 mb-8 border border-white/5 flex items-center gap-3 group focus-within:border-primary/30 transition-colors overflow-hidden">
+                      <input type="text" id="inp-quick-topic" placeholder="Add new topic..." class="bg-transparent border-none text-white placeholder:text-slate-500 focus:ring-0 flex-1 min-w-0 outline-none font-medium px-2">
+                      
+                      <div class="flex items-center bg-slate-900/50 p-1 rounded-xl border border-white/5 shrink-0">
+                           <input type="number" id="inp-quick-hours" placeholder="Target Hrs" class="bg-transparent border-none text-white text-sm w-24 p-1.5 outline-none focus:ring-0 text-center font-mono placeholder:text-slate-600">
                       </div>
+
+                      <button id="btn-quick-add" class="bg-white/10 hover:bg-white/20 text-white w-10 h-10 flex items-center justify-center rounded-xl transition-all hover:scale-105 active:scale-95 shrink-0">
+                           <span class="material-icons-outlined text-lg">add</span>
+                      </button>
                  </div>
                  
                  <div class="space-y-3" id="topic-list-container">
@@ -285,14 +287,12 @@ function openSubjectDetailsModal(subjectId) {
                  </div>
              </div>
              
-             <!-- Footer Options -->
-             <div class="p-6 border-t border-white/5 bg-black/20 shrink-0 flex justify-between items-center">
-                 <div class="text-xs text-slate-500">
-                    Pro Tip: Break down large subjects into smaller chunks (2-5 hours).
-                 </div>
-                 <button class="text-xs text-slate-400 hover:text-primary transition-colors flex items-center gap-1" id="btn-edit-color">
-                     Change Color <span class="material-icons-outlined text-xs">palette</span>
-                 </button>
+             <!-- Footer -->
+             <div class="p-6 border-t border-white/5 bg-black/20 shrink-0">
+                  <div class="text-xs text-slate-500 flex items-center gap-2">
+                     <span class="material-icons-outlined text-sm">lightbulb</span>
+                     Pro Tip: Break down large subjects into smaller chunks (2-5 hours).
+                  </div>
              </div>
         </div>
     `);
@@ -375,20 +375,5 @@ function openSubjectDetailsModal(subjectId) {
         if (btnAddTopic) btnAddTopic.addEventListener('click', handleAdd);
 
         attachDelListeners();
-
-        // Color Picker Edit
-        const btnEditColor = document.getElementById('btn-edit-color');
-        btnEditColor.addEventListener('click', () => {
-            // Simple Prompt for now or cycle
-            const colors = ['#6366f1', '#ec4899', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#3b82f6', '#14b8a6'];
-            const currentIdx = colors.indexOf(subject.color);
-            const nextColor = colors[(currentIdx + 1) % colors.length];
-            updateSubjectColor(subject.id, nextColor);
-            // Full refresh
-            closeModal();
-            setTimeout(() => openSubjectDetailsModal(subjectId), 50);
-            document.dispatchEvent(new CustomEvent('nav-refresh'));
-        });
-
     }, 50);
 }
