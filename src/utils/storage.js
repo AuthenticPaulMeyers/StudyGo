@@ -1,37 +1,7 @@
 const DB_KEY = 'studygo_db';
 
 const defaultData = {
-      subjects: [
-            {
-                  id: 'sub_1',
-                  name: 'Mathematics',
-                  color: '#6366f1', // Indigo
-                  topics: [
-                        { id: 't_1', name: 'Algebra', targetHours: 5, spentHours: 0 },
-                        { id: 't_2', name: 'Calculus', targetHours: 8, spentHours: 0 }
-                  ]
-            },
-            {
-                  id: 'sub_2',
-                  name: 'Physics',
-                  color: '#ec4899',    // Pink
-                  topics: [
-                        { id: 't_3', name: 'Mechanics', targetHours: 4, spentHours: 0 }
-                  ]
-            },
-            {
-                  id: 'sub_3',
-                  name: 'Literature',
-                  color: '#10b981', // Emerald
-                  topics: []
-            },
-            {
-                  id: 'sub_4',
-                  name: 'Computer Science',
-                  color: '#f59e0b', // Amber
-                  topics: []
-            }
-      ],
+      subjects: [],
       sessions: [], // { id, subjectId, topicId, duration (sec), timestamp }
       settings: {
             darkMode: true,
