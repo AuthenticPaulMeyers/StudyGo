@@ -1,8 +1,9 @@
-import { getSubjects, saveDB, getDB, addTopic, deleteTopic, updateSubjectColor } from '../utils/storage.js';
+import { getSubjects, getDB, addTopic, deleteTopic, updateSubjectColor, addSubject, deleteSubject } from '../utils/storage.js';
 import { openModal, closeModal } from './Modal.js';
 
-export function renderSubjects() {
-    const subjects = getSubjects();
+export function renderSubjects(db) {
+    if (!db) return '<div class="text-slate-400">Loading subjects...</div>';
+    const subjects = db.subjects || [];
 
     return `
     <div class="max-w-7xl mx-auto space-y-8 animate-fade-in">
@@ -18,19 +19,26 @@ export function renderSubjects() {
         </header>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            ${subjects.map(sub => renderSubjectCard(sub)).join('')}
+            ${subjects.map(sub => renderSubjectCard(sub, db.sessions || [])).join('')}
         </div>
     </div>
     `;
 }
 
-function renderSubjectCard(sub) {
+function renderSubjectCard(sub, allSessions) {
     const topicCount = sub.topics ? sub.topics.length : 0;
-    // Calculate total progress for the subject based on topics
-    const totalTarget = sub.topics ? sub.topics.reduce((acc, t) => acc + (t.targetHours || 0), 0) : 0;
-    const totalSpent = sub.topics ? sub.topics.reduce((acc, t) => acc + (t.spentHours || 0), 0) : 0;
+
+    // Calculate REAL spent hours from sessions
+    const totalSpent = allSessions
+        .filter(s => String(s.subject_id) === String(sub.id))
+        .reduce((acc, s) => acc + s.duration, 0) / 3600;
+
+    // Target is sum of topic targets
+    const totalTarget = sub.topics ? sub.topics.reduce((acc, t) => acc + (parseFloat(t.target_hours) || 0), 0) : 0;
+
     const progress = totalTarget > 0 ? (totalSpent / totalTarget) * 100 : 0;
     const cappedProgress = Math.min(100, progress);
+    const visibleProgress = progress > 0 ? Math.max(cappedProgress, 2) : 0;
 
     return `
     <div class="subject-card bg-surface/40 backdrop-blur-md border border-white/5 p-6 rounded-3xl group hover:bg-surface/60 transition-all relative overflow-hidden flex flex-col cursor-pointer" data-id="${sub.id}">
@@ -45,7 +53,7 @@ function renderSubjectCard(sub) {
                     <h3 class="font-bold text-slate-100 text-xl leading-tight group-hover:text-white transition-colors">${sub.name}</h3>
                     <div class="text-xs text-slate-400 mt-1 flex items-center gap-2">
                          <span class="bg-white/5 px-2 py-0.5 rounded text-slate-300">${topicCount} Topics</span>
-                         <span>${Math.round(totalSpent)}h studied</span>
+                         <span>${totalSpent.toFixed(1)}h studied</span>
                     </div>
                 </div>
             </div>
@@ -68,7 +76,7 @@ function renderSubjectCard(sub) {
                     <span class="text-xs font-bold text-slate-300">${Math.round(progress)}%</span>
                 </div>
                 <div class="w-full bg-slate-900/50 rounded-full h-2 overflow-hidden border border-white/5">
-                    <div class="h-full rounded-full transition-all duration-1000" style="width: ${cappedProgress}%; background-color: ${sub.color}"></div>
+                    <div class="h-full rounded-full transition-all duration-1000" style="width: ${visibleProgress}%; background-color: ${sub.color}"></div>
                 </div>
             </div>
 
@@ -92,30 +100,29 @@ function renderSubjectCard(sub) {
     `;
 }
 
-export function initSubjectsLogic() {
+export function initSubjectsLogic(db) {
+    if (!db) return;
     // Add Subject Button
     const btnAdd = document.getElementById('btn-add-subject');
     if (btnAdd) {
-        btnAdd.addEventListener('click', openAddSubjectModal);
+        btnAdd.addEventListener('click', () => openAddSubjectModal(db));
     }
 
     // Card Click (Drill Down)
     document.querySelectorAll('.subject-card').forEach(card => {
         card.addEventListener('click', () => {
             const id = card.dataset.id;
-            openSubjectDetailsModal(id);
+            openSubjectDetailsModal(id, db);
         });
     });
 
     // Inline Actions (Stop Propagation handled in HTML, just attach logic)
     // Delete
     document.querySelectorAll('.btn-delete-sub').forEach(btn => {
-        btn.addEventListener('click', (e) => {
+        btn.addEventListener('click', async (e) => {
             const id = btn.dataset.id;
             if (confirm('Delete this subject and all its topics?')) {
-                const db = getDB();
-                db.subjects = db.subjects.filter(s => s.id !== id);
-                saveDB(db);
+                await deleteSubject(id);
                 document.dispatchEvent(new CustomEvent('nav-refresh'));
             }
         });
@@ -125,16 +132,8 @@ export function initSubjectsLogic() {
     document.querySelectorAll('.btn-color-picker').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const id = btn.dataset.id;
-            // Quick color cycle or modal? Let's do a simple cycle for "Quick" feeling
-            // Or maybe Open a mini popover? Simplest for now: Cycle 3 colors or open small modal.
-            // Let's reuse the detailed modal logic but just focusing on color? 
-            // Actually, easier to just let them change it in the Drill Down view.
-            // But the user asked for "Color Coding... assign a specific color". 
-            // Let's make this button open a dedicated small modal or just trigger the detail view. 
-            // To be slick, let's open the Detail view but scroll to settings.
-            // For now, let's just trigger the main detail view to avoid complexity.
             e.stopPropagation();
-            openSubjectDetailsModal(id);
+            openSubjectDetailsModal(id, db);
         });
     });
 }
@@ -183,20 +182,12 @@ function openAddSubjectModal() {
             });
         });
 
-        document.getElementById('btn-save-sub').addEventListener('click', () => {
+        document.getElementById('btn-save-sub').addEventListener('click', async () => {
             const name = document.getElementById('inp-sub-name').value;
             const color = document.getElementById('inp-sub-color').value;
 
             if (name) {
-                const db = getDB();
-                db.subjects.push({
-                    id: 'sub_' + Date.now(),
-                    name,
-                    color,
-                    weeklyGoal: 0,
-                    topics: []
-                });
-                saveDB(db);
+                await addSubject(name, color);
                 closeModal();
                 document.dispatchEvent(new CustomEvent('nav-refresh'));
             }
@@ -204,8 +195,7 @@ function openAddSubjectModal() {
     }, 50);
 }
 
-function openSubjectDetailsModal(subjectId) {
-    const db = getDB();
+function openSubjectDetailsModal(subjectId, db) {
     const subject = db.subjects.find(s => s.id === subjectId);
     if (!subject) return;
 
@@ -217,7 +207,11 @@ function openSubjectDetailsModal(subjectId) {
         }
 
         return subject.topics.map(t => {
-            const pct = t.targetHours > 0 ? (t.spentHours / t.targetHours) * 100 : 0;
+            const topicSpent = (db.sessions || [])
+                .filter(s => String(s.topic_id) === String(t.id))
+                .reduce((acc, s) => acc + s.duration, 0) / 3600;
+            const pct = t.target_hours > 0 ? (topicSpent / t.target_hours) * 100 : 0;
+
             return `
             <div class="flex items-center gap-4 bg-slate-900/30 p-4 rounded-xl border border-white/5 hover:bg-slate-900/50 transition-colors group">
                 <div class="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 text-slate-400 font-bold shrink-0">
@@ -232,9 +226,9 @@ function openSubjectDetailsModal(subjectId) {
                     </div>
                     <div class="flex items-center gap-3">
                         <div class="flex-1 bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                            <div class="h-full rounded-full bg-${subject.color} || bg-white" style="width: ${Math.min(100, pct)}%; background-color: ${subject.color}"></div>
+                            <div class="h-full rounded-full transition-all duration-100" style="width: ${Math.min(100, pct)}%; background-color: ${subject.color}"></div>
                         </div>
-                        <span class="text-xs font-mono text-slate-400 whitespace-nowrap">${Math.round(t.spentHours * 10) / 10} / ${t.targetHours}h</span>
+                        <span class="text-xs font-mono text-slate-400 whitespace-nowrap">${Math.round(topicSpent * 10) / 10} / ${t.target_hours}h</span>
                     </div>
                 </div>
             </div>
@@ -301,72 +295,35 @@ function openSubjectDetailsModal(subjectId) {
         document.getElementById('btn-close-modal').addEventListener('click', closeModal);
 
         // Add Topic Logic
-        const handleAdd = () => {
+        const handleAdd = async () => {
             const name = document.getElementById('inp-quick-topic').value;
             const hours = document.getElementById('inp-quick-hours').value;
 
             if (name && hours) {
-                addTopic(subject.id, name, hours);
-                // Re-render only list part? Or refresh modal?
-                // Refreshing modal requires closing and reopening or manual DOM manipulation.
-                // Let's manual DOM for speed feel.
+                await addTopic(subject.id, name, hours);
                 document.getElementById('inp-quick-topic').value = '';
                 document.getElementById('inp-quick-hours').value = '';
-                // We need to re-fetch subject data
-                const newDb = getDB();
-                const newSub = newDb.subjects.find(s => s.id === subject.id);
-                // Use a slight hack to update 'subject' ref if we were strictly binding, but here we just re-call render
-                // Easier to close/refresh navigation, but that's jarring.
-                // Let's implement a 'refreshList' internal function by passing the container.
 
-                // Cheap way: close and reopen (simple but flickery)
-                // Better way: Re-generate HTML and set innerHTML
-
-                const updatedSub = getDB().subjects.find(s => s.id === subjectId);
-
-                const newHtml = updatedSub.topics.map(t => {
-                    const pct = t.targetHours > 0 ? (t.spentHours / t.targetHours) * 100 : 0;
-                    return `
-                    <div class="flex items-center gap-4 bg-slate-900/30 p-4 rounded-xl border border-white/5 hover:bg-slate-900/50 transition-colors group animate-fade-in">
-                        <div class="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 text-slate-400 font-bold shrink-0">
-                            ${t.name.substring(0, 2).toUpperCase()}
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex justify-between items-center mb-1">
-                                <h4 class="font-bold text-slate-200 truncate">${t.name}</h4>
-                                <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                     <button class="text-xs text-red-400 hover:text-red-300 btn-del-topic" data-tid="${t.id}">Delete</button>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <div class="flex-1 bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                                    <div class="h-full rounded-full bg-${updatedSub.color} || bg-white" style="width: ${Math.min(100, pct)}%; background-color: ${updatedSub.color}"></div>
-                                </div>
-                                <span class="text-xs font-mono text-slate-400 whitespace-nowrap">${Math.round(t.spentHours * 10) / 10} / ${t.targetHours}h</span>
-                            </div>
-                        </div>
-                    </div>
-                    `;
-                }).join('');
-
-                document.getElementById('topic-list-container').innerHTML = newHtml;
-                attachDelListeners(); // Re-attach listeners to new elements
-                document.dispatchEvent(new CustomEvent('nav-refresh')); // Update background app
+                // Refresh modal content by re-triggering details with fresh DB
+                closeModal();
+                const freshDB = await getDB();
+                openSubjectDetailsModal(subjectId, freshDB);
+                document.dispatchEvent(new CustomEvent('nav-refresh'));
             }
         };
 
         const attachDelListeners = () => {
             document.querySelectorAll('.btn-del-topic').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation(); // prevent issues
+                btn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
                     const tid = btn.dataset.tid;
-                    deleteTopic(subject.id, tid);
-                    // Update UI manually again 
-                    const updatedSub = getDB().subjects.find(s => s.id === subjectId);
-                    // Duplicate logic, normally would extract render function.
-                    // For now, trigger refresh
-                    document.getElementById('btn-close-modal').click();
-                    setTimeout(() => openSubjectDetailsModal(subjectId), 50); // flicker refresh
+                    await deleteTopic(subject.id, tid);
+
+                    // Refresh modal
+                    closeModal();
+                    const freshDB = await getDB();
+                    openSubjectDetailsModal(subjectId, freshDB);
+                    document.dispatchEvent(new CustomEvent('nav-refresh'));
                 });
             });
         };

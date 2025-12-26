@@ -9,8 +9,9 @@ let currentSubjectId = null;
 let currentTopicId = null;
 let isZenMode = false;
 
-export function renderTimer() {
-      const subjects = getSubjects();
+export function renderTimer(db) {
+      if (!db) return '<div class="text-slate-400">Loading timer...</div>';
+      const subjects = db.subjects || [];
       // Only subjects options. Topic options populate via JS
       const subOptions = subjects.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
 
@@ -102,7 +103,7 @@ export function renderTimer() {
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/10 via-slate-900 to-slate-900"></div>
         
         <div class="relative z-10 text-center">
-             <h3 class="text-2xl text-slate-400 font-light mb-8 tracking-[0.2em] uppercase">Flow State</h3>
+             <h3 class="text-2xl text-slate-400 font-light mb-8 tracking-[0.2em] uppercase">Locked In</h3>
              
              <!-- Circular Progress -->
              <div class="relative w-80 h-80 mx-auto flex items-center justify-center mb-12">
@@ -123,7 +124,8 @@ export function renderTimer() {
     `;
 }
 
-export function initTimerLogic() {
+export function initTimerLogic(db) {
+      if (!db) return;
       const display = document.getElementById('timer-display');
       const setupView = document.getElementById('setup-view');
       const countdownView = document.getElementById('countdown-view');
@@ -147,7 +149,7 @@ export function initTimerLogic() {
       // Logic for Subject/Topic Select
       selectSub.addEventListener('change', () => {
             const subId = selectSub.value;
-            const subjects = getSubjects();
+            const subjects = db.subjects || [];
             const sub = subjects.find(s => s.id === subId);
 
             selectTopic.innerHTML = '<option value="" selected>Topic (Optional)</option>';
@@ -295,7 +297,7 @@ export function initTimerLogic() {
 
       function resumeTimer() {
             isPaused = false;
-            document.getElementById('timer-status').textContent = 'FOCUS MODE';
+            document.getElementById('timer-status').textContent = 'DEEP WORK';
             document.getElementById('timer-status').className = 'px-3 py-1 bg-primary/20 text-primary rounded-full text-xs font-mono animate-pulse';
             renderControls('running');
             runInterval();
@@ -306,8 +308,8 @@ export function initTimerLogic() {
             isRunning = false;
             isPaused = false;
             remainingArgs = 0;
-            document.title = 'StudyGo';
-            window.onbeforeunload = null;
+            currentSubjectId = null;
+            currentTopicId = null;
 
             // Unlock Navigation
             document.dispatchEvent(new CustomEvent('toggle-nav', { detail: { locked: false } }));
@@ -316,8 +318,9 @@ export function initTimerLogic() {
             setupView.classList.remove('hidden');
             countdownView.classList.add('hidden');
             selectSub.disabled = false;
-            selectTopic.disabled = !selectSub.value; // Reset based on selection logic
-            if (selectSub.value && getSubjects().find(s => s.id === selectSub.value).topics.length > 0) selectTopic.disabled = false;
+            selectSub.value = "";
+            selectTopic.innerHTML = '<option value="" selected>Topic (Optional)</option>';
+            selectTopic.disabled = true;
 
             document.getElementById('timer-status').textContent = 'IDLE';
             document.getElementById('timer-status').className = 'px-3 py-1 bg-white/5 rounded-full text-xs font-mono text-slate-400';
@@ -325,10 +328,11 @@ export function initTimerLogic() {
             zenOverlay.classList.add('opacity-0');
             setTimeout(() => zenOverlay.classList.add('hidden'), 500);
 
+            // Re-render controls
             renderControls('idle');
       }
 
-      function finishTimer(actualDuration = null) {
+      async function finishTimer(actualDuration = null) {
             clearInterval(timerInterval);
             isRunning = false;
             window.onbeforeunload = null;
@@ -338,17 +342,15 @@ export function initTimerLogic() {
 
             const durationToSave = actualDuration !== null ? actualDuration : initialDuration;
 
-            // Only save if meaningful duration (> 1 minute maybe? User didn't specify, saving all)
             if (durationToSave > 0) {
                   // Save Session
                   const session = {
-                        id: Date.now().toString(),
                         subjectId: currentSubjectId,
                         topicId: currentTopicId,
                         duration: durationToSave,
                         timestamp: Date.now()
                   };
-                  addSession(session);
+                  await addSession(session);
 
                   // Notification
                   try {

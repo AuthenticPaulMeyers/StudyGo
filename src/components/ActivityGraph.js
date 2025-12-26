@@ -6,9 +6,8 @@ import { openModal, closeModal } from './Modal.js';
 let chartInstance = null;
 let selectedYear = new Date().getFullYear();
 
-export function renderActivityGraph() {
-      // Structure based on GitHub contribution graph layout
-      const db = getDB();
+export function renderActivityGraph(db) {
+      if (!db) return '<div class="text-slate-400">Loading activity...</div>';
       const sessions = db.sessions || [];
 
       // Calculate total sessions for selected year
@@ -108,16 +107,17 @@ export function renderActivityGraph() {
     `;
 }
 
-export function initGraphLogic() {
-      renderGithubGrid();
-      renderLineChart();
+export function initGraphLogic(db) {
+      if (!db) return;
+      renderGithubGrid(db);
+      renderLineChart(db);
 
       const grid = document.getElementById('github-grid');
       if (grid) {
             grid.addEventListener('click', (e) => {
                   const cell = e.target.closest('.day-cell');
                   if (cell && cell.dataset.date) {
-                        showDailyDetails(cell.dataset.date);
+                        showDailyDetails(db, cell.dataset.date);
                   }
             });
       }
@@ -133,11 +133,11 @@ export function initGraphLogic() {
                         // Re-render whole component to update labels and buttons
                         const container = document.getElementById('activity-graph-container');
                         if (container) {
-                              container.innerHTML = renderActivityGraph();
-                              initGraphLogic();
+                              container.innerHTML = renderActivityGraph(db);
+                              initGraphLogic(db);
                         } else {
                               // Fallback: just update grid if container not found
-                              renderGithubGrid();
+                              renderGithubGrid(db);
                         }
                   }
             });
@@ -149,12 +149,11 @@ function getSessionData() {
       return db.sessions || []; // [{ timestamp, duration }]
 }
 
-function showDailyDetails(dateStr) {
-      const db = getDB();
+function showDailyDetails(db, dateStr) {
       const subjects = db.subjects || [];
       const sessions = (db.sessions || []).filter(s => {
-            const d = new Date(s.timestamp).toISOString().split('T')[0];
-            return d === dateStr;
+            const dStr = new Date(s.timestamp).toISOString().split('T')[0];
+            return dStr === dateStr;
       });
 
       const renderList = (sortMethod) => {
@@ -163,8 +162,8 @@ function showDailyDetails(dateStr) {
                   sortedSessions.sort((a, b) => b.duration - a.duration);
             } else if (sortMethod === 'subject') {
                   sortedSessions.sort((a, b) => {
-                        const subA = subjects.find(s => s.id === a.subjectId)?.name || '';
-                        const subB = subjects.find(s => s.id === b.subjectId)?.name || '';
+                        const subA = subjects.find(s => s.id === a.subject_id)?.name || '';
+                        const subB = subjects.find(s => s.id === b.subject_id)?.name || '';
                         return subA.localeCompare(subB);
                   });
             }
@@ -180,14 +179,14 @@ function showDailyDetails(dateStr) {
             return `
             <div class="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                 ${sortedSessions.map(s => {
-                  const sub = subjects.find(sub => sub.id === s.subjectId) || { name: 'Unknown Subject', color: '#64748b', topics: [] };
+                  const sub = subjects.find(sub => sub.id === s.subject_id) || { name: 'Unknown Subject', color: '#64748b', topics: [] };
                   const mins = Math.round(s.duration / 60);
                   const timeStr = new Date(s.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
                   // Priority: Specific Topic -> All Topics -> General
                   let topicDisplay = 'General Study';
-                  if (s.topicId && sub.topics) {
-                        const t = sub.topics.find(t => t.id === s.topicId);
+                  if (s.topic_id && sub.topics) {
+                        const t = sub.topics.find(t => t.id === s.topic_id);
                         if (t) topicDisplay = t.name;
                   } else if (sub.topics && sub.topics.length > 0) {
                         topicDisplay = sub.topics.map(t => t.name).join(', ');
@@ -270,12 +269,12 @@ function showDailyDetails(dateStr) {
       }, 50);
 }
 
-function renderGithubGrid() {
+function renderGithubGrid(db) {
       const container = document.getElementById('github-grid');
       const monthContainer = document.getElementById('month-labels');
-      if (!container) return;
+      if (!container || !db) return;
 
-      const sessions = getSessionData();
+      const sessions = db.sessions || [];
       const map = {};
       sessions.forEach(s => {
             const date = new Date(s.timestamp).toISOString().split('T')[0]; // YYYY-MM-DD
@@ -339,9 +338,9 @@ function renderGithubGrid() {
       monthContainer.innerHTML = labelRow;
 }
 
-function renderLineChart() {
+function renderLineChart(db) {
       const canvas = document.getElementById('activityChart');
-      if (!canvas) return;
+      if (!canvas || !db) return;
 
       if (chartInstance) chartInstance.destroy();
 
@@ -352,7 +351,7 @@ function renderLineChart() {
       const startDate = subDays(today, days - 1);
       const dateRange = eachDayOfInterval({ start: startDate, end: today });
 
-      const sessions = getSessionData();
+      const sessions = db.sessions || [];
       const sessionMap = {};
       sessions.forEach(s => {
             const dStr = format(new Date(s.timestamp), 'yyyy-MM-dd');
@@ -434,6 +433,6 @@ function renderLineChart() {
       });
 
       if (select) {
-            select.onchange = () => renderLineChart();
+            select.onchange = () => renderLineChart(db);
       }
 }

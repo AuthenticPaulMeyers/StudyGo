@@ -3,9 +3,8 @@ import { getSubjects, getDB, updateSettings } from '../utils/storage.js';
 import { openModal, closeModal } from './Modal.js';
 import confetti from 'canvas-confetti';
 
-export function renderDashboard() {
-    // Calculate Stats
-    const db = getDB();
+export function renderDashboard(db) {
+    if (!db) return '<div class="text-slate-400">Loading dashboard...</div>';
     const subjects = db.subjects || [];
     const sessions = db.sessions || [];
     const settings = db.settings || { weeklyGoal: 10 };
@@ -15,7 +14,7 @@ export function renderDashboard() {
     subjects.forEach(sub => {
         if (sub.topics) {
             sub.topics.forEach(t => {
-                totalGoalHours += (parseFloat(t.targetHours) || 0);
+                totalGoalHours += (parseFloat(t.target_hours) || 0);
             });
         }
     });
@@ -33,12 +32,15 @@ export function renderDashboard() {
 
     // Period 1: Last 7 days
     const p1Duration = sessions
-        .filter(s => s.timestamp >= sevenDaysAgo)
+        .filter(s => new Date(s.timestamp).getTime() >= sevenDaysAgo)
         .reduce((acc, s) => acc + s.duration, 0);
 
     // Period 2: Previous 7 days
     const p2Duration = sessions
-        .filter(s => s.timestamp >= fourteenDaysAgo && s.timestamp < sevenDaysAgo)
+        .filter(s => {
+            const t = new Date(s.timestamp).getTime();
+            return t >= fourteenDaysAgo && t < sevenDaysAgo;
+        })
         .reduce((acc, s) => acc + s.duration, 0);
 
     const hoursDone = p1Duration / 3600;
@@ -73,18 +75,18 @@ export function renderDashboard() {
     }
 
     // Recent Sessions
-    const recentSessions = sessions
-        .sort((a, b) => b.timestamp - a.timestamp)
+    const recentSessions = [...sessions]
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
         .slice(0, 3)
         .map(s => {
-            const sub = subjects.find(sub => sub.id === s.subjectId) || { name: 'Unknown', color: '#64748b' };
+            const sub = subjects.find(sub => String(sub.id) === String(s.subject_id)) || { name: 'Unknown', color: '#64748b' };
             const date = new Date(s.timestamp).toLocaleDateString();
             const mins = Math.round(s.duration / 60);
 
             // Topic Name if exists
             let topicName = '';
-            if (s.topicId && sub.topics) {
-                const t = sub.topics.find(t => t.id === s.topicId);
+            if (s.topic_id && sub.topics) {
+                const t = sub.topics.find(t => t.id === s.topic_id);
                 if (t) topicName = t.name;
             }
 
@@ -127,7 +129,7 @@ export function renderDashboard() {
             <!-- Activity Graph (Spans 2 cols) -->
             <div class="lg:col-span-2 space-y-8 animate-slide-up">
                 <div id="activity-graph-container">
-                    ${renderActivityGraph()}
+                    ${renderActivityGraph(db)}
                 </div>
                 
                 <!-- Recent Activity -->
@@ -147,9 +149,9 @@ export function renderDashboard() {
             </div>
 
             <!-- Side Stats (right col) -->
-            <div class="space-y-8 animate-slide-up" style="animation-delay: 100ms;">
+            <div class="space-y-8 animate-slide-up" style="animation-delay: 10ms;">
                  <!-- Goals Card -->
-                 <div class="bg-gradient-to-br from-primary to-indigo-600 p-6 rounded-3xl shadow-lg shadow-primary/20 text-white relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
+                 <div class="bg-gradient-to-br from-primary to-indigo-600 p-6 rounded-3xl shadow-lg shadow-primary/20 text-white relative overflow-hidden group hover:scale-[1.02] transition-transform duration-100">
                     <div class="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-xl group-hover:bg-white/20 transition-colors"></div>
                     <div class="relative z-10">
                         <div class="flex justify-between items-start mb-1">
@@ -159,23 +161,23 @@ export function renderDashboard() {
                         <div class="text-4xl font-bold mb-2 break-words text-wrap flex flex-wrap items-baseline gap-2">
                              ${isGoalMet ?
             `<span>GOAL MET!</span>` :
-            `<span>${Math.round(remainingHours * 10) / 10}h</span> <span class="text-lg opacity-70">Remaining</span>`
+            `<span>${remainingHours.toFixed(1)}h</span> <span class="text-lg opacity-70">Remaining</span>`
         }
                         </div>
                         
                         <div class="w-full bg-black/20 rounded-full h-2 mt-4 overflow-hidden">
-                             <div class="bg-white h-full rounded-full transition-all duration-1000" style="width: ${cappedProgress}%"></div>
+                             <div class="bg-white h-full rounded-full transition-all duration-100" style="width: ${cappedProgress}%"></div>
                         </div>
                         
                         <div class="flex justify-between mt-2 text-xs text-indigo-100/80">
-                             <span>${Math.round(hoursDone * 10) / 10}h done</span>
-                             <span>Goal: ${Math.round(totalGoalHours * 10) / 10}h</span>
+                             <span>${hoursDone.toFixed(1)}h done</span>
+                             <span>Goal: ${totalGoalHours.toFixed(1)}h</span>
                         </div>
                     </div>
                  </div>
 
                  <!-- Tip Card / Velocity Mobile -->
-                 <div class="bg-gradient-to-br from-emerald-500 to-teal-600 p-6 rounded-3xl shadow-lg shadow-emerald-500/20 text-white relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
+                 <div class="bg-gradient-to-br from-emerald-500 to-teal-600 p-6 rounded-3xl shadow-lg shadow-emerald-500/20 text-white relative overflow-hidden group hover:scale-[1.02] transition-transform duration-100">
                     <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors"></div>
                      <h4 class="font-bold text-lg mb-2 flex items-center gap-2">
                         <span class="material-icons-outlined">lightbulb</span>
@@ -193,11 +195,11 @@ export function renderDashboard() {
     `;
 }
 
-export function initDashboardLogic() {
-    initGraphLogic();
+export function initDashboardLogic(db) {
+    if (!db) return;
+    initGraphLogic(db);
 
     // Check Goal Met for Confetti
-    const db = getDB();
     const subjects = db.subjects || [];
     const sessions = db.sessions || [];
     const settings = db.settings || { weeklyGoal: 10 };
@@ -206,7 +208,7 @@ export function initDashboardLogic() {
     subjects.forEach(sub => {
         if (sub.topics) {
             sub.topics.forEach(t => {
-                totalGoalHours += (parseFloat(t.targetHours) || 0);
+                totalGoalHours += (parseFloat(t.target_hours) || 0);
             });
         }
     });
@@ -220,7 +222,7 @@ export function initDashboardLogic() {
     const sevenDaysAgo = now - (7 * oneDay);
 
     const p1Duration = sessions
-        .filter(s => s.timestamp >= sevenDaysAgo)
+        .filter(s => new Date(s.timestamp).getTime() >= sevenDaysAgo)
         .reduce((acc, s) => acc + s.duration, 0);
     const hoursDone = p1Duration / 3600;
 

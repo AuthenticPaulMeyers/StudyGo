@@ -1,84 +1,138 @@
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "";
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
+
+export const supabase = (supabaseUrl && supabaseAnonKey) ? createClient(supabaseUrl, supabaseAnonKey) : null;
+
+// --- Local Fallback for Settings (Non-critical) ---
 const DB_KEY = 'studygo_db';
-
-const defaultData = {
-      subjects: [],
-      sessions: [], // { id, subjectId, topicId, duration (sec), timestamp }
-      settings: {
-            darkMode: true,
-            weeklyGoal: 10 // Default global weekly goal (hours)
-      }
+const defaultSettings = {
+      darkMode: true,
+      weeklyGoal: 10
 };
 
-export const getDB = () => {
+export const getLocalSettings = () => {
       const data = localStorage.getItem(DB_KEY);
-      if (!data) {
-            saveDB(defaultData);
-            return defaultData;
+      if (!data) return defaultSettings;
+      return JSON.parse(data).settings || defaultSettings;
+};
+
+export const saveLocalSettings = (settings) => {
+      const data = localStorage.getItem(DB_KEY) || JSON.stringify({ settings: defaultSettings });
+      const db = JSON.parse(data);
+      db.settings = settings;
+      localStorage.setItem(DB_KEY, JSON.stringify(db));
+};
+
+// --- Supabase Data Logic ---
+
+/**
+ * Fetches all data for the current user including subjects, topics, and sessions.
+ * Note: Components will need to be updated to handled Async data.
+ */
+export const getDB = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return { subjects: [], sessions: [], settings: getLocalSettings() };
+
+      // Fetch subjects with topics
+      const { data: subjects, error: subError } = await supabase
+            .from('subjects')
+            .select(`
+                  *,
+                  topics (*)
+            `)
+            .order('created_at', { ascending: true });
+
+      // Fetch sessions
+      const { data: sessions, error: sessError } = await supabase
+            .from('sessions')
+            .select('*')
+            .order('timestamp', { ascending: false });
+
+      // Fetch Profile/Settings
+      const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .single();
+
+      return {
+            subjects: subjects || [],
+            sessions: sessions || [],
+            settings: profile || getLocalSettings()
+      };
+};
+
+export const updateSettings = async (settings) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+            saveLocalSettings(settings);
+            return;
       }
-      return JSON.parse(data);
+
+      await supabase.from('profiles').upsert({
+            id: user.id,
+            ...settings,
+            updated_at: new Date()
+      });
 };
 
-export const saveDB = (data) => {
-      localStorage.setItem(DB_KEY, JSON.stringify(data));
+export const addSession = async (session) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase.from('sessions').insert({
+            user_id: user.id,
+            subject_id: session.subjectId,
+            topic_id: session.topicId,
+            duration: session.duration,
+            timestamp: new Date(session.timestamp).toISOString()
+      });
+
+      if (error) console.error('Error adding session:', error);
 };
 
-export const updateSettings = (settings) => {
-      const db = getDB();
-      db.settings = { ...(db.settings || defaultData.settings), ...settings };
-      saveDB(db);
+export const getSubjects = async () => {
+      const { data, error } = await supabase
+            .from('subjects')
+            .select('*, topics(*)');
+      return data || [];
 };
 
-export const addSession = (session) => {
-      const db = getDB();
-      db.sessions.push(session);
+export const addSubject = async (name, color) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-      // Update Subject/Topic Spent Hours
-      const subject = db.subjects.find(s => s.id === session.subjectId);
-      if (subject) {
-            if (session.topicId) {
-                  const topic = subject.topics.find(t => t.id === session.topicId);
-                  if (topic) {
-                        topic.spentHours = (topic.spentHours || 0) + (session.duration / 3600);
-                  }
-            }
-      }
-      saveDB(db);
+      const { data, error } = await supabase.from('subjects').insert({
+            user_id: user.id,
+            name,
+            color
+      }).select().single();
+
+      return data;
 };
 
-export const getSubjects = () => {
-      return getDB().subjects;
+export const deleteSubject = async (id) => {
+      await supabase.from('subjects').delete().eq('id', id);
 };
 
 // Topic Management
-export const addTopic = (subjectId, topicName, targetHours) => {
-      const db = getDB();
-      const subject = db.subjects.find(s => s.id === subjectId);
-      if (subject) {
-            if (!subject.topics) subject.topics = [];
-            subject.topics.push({
-                  id: 't_' + Date.now(),
-                  name: topicName,
-                  targetHours: parseFloat(targetHours) || 0,
-                  spentHours: 0
-            });
-            saveDB(db);
-      }
+export const addTopic = async (subjectId, topicName, targetHours) => {
+      const { data, error } = await supabase.from('topics').insert({
+            subject_id: subjectId,
+            name: topicName,
+            target_hours: parseFloat(targetHours) || 0,
+            spent_hours: 0
+      }).select().single();
+
+      return data;
 };
 
-export const deleteTopic = (subjectId, topicId) => {
-      const db = getDB();
-      const subject = db.subjects.find(s => s.id === subjectId);
-      if (subject && subject.topics) {
-            subject.topics = subject.topics.filter(t => t.id !== topicId);
-            saveDB(db);
-      }
+export const deleteTopic = async (subjectId, topicId) => {
+      // subjectId is reinforced by RLS but topicId is the primary key
+      await supabase.from('topics').delete().eq('id', topicId);
 };
 
-export const updateSubjectColor = (subjectId, color) => {
-      const db = getDB();
-      const subject = db.subjects.find(s => s.id === subjectId);
-      if (subject) {
-            subject.color = color;
-            saveDB(db);
-      }
+export const updateSubjectColor = async (subjectId, color) => {
+      await supabase.from('subjects').update({ color }).eq('id', subjectId);
 };
