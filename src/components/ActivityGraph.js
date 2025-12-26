@@ -142,6 +142,15 @@ function showDailyDetails(dateStr) {
                   const mins = Math.round(s.duration / 60);
                   const timeStr = new Date(s.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+                  // Priority: Specific Topic -> All Topics -> General
+                  let topicDisplay = 'General Study';
+                  if (s.topicId && sub.topics) {
+                        const t = sub.topics.find(t => t.id === s.topicId);
+                        if (t) topicDisplay = t.name;
+                  } else if (sub.topics && sub.topics.length > 0) {
+                        topicDisplay = sub.topics.map(t => t.name).join(', ');
+                  }
+
                   return `
                     <div class="bg-slate-800/50 border border-white/5 p-4 rounded-xl flex items-center justify-between group hover:bg-slate-800 transition-colors">
                         <div class="flex items-center gap-4">
@@ -152,7 +161,7 @@ function showDailyDetails(dateStr) {
                                     <span class="text-xs text-slate-500 font-mono">${timeStr}</span>
                                 </div>
                                 <div class="text-xs text-slate-400 mt-1 line-clamp-1">
-                                    ${sub.topics && sub.topics.length ? sub.topics.join(', ') : 'General Study'}
+                                    ${topicDisplay}
                                 </div>
                             </div>
                         </div>
@@ -297,39 +306,26 @@ function renderLineChart() {
       const select = document.getElementById('graph-period');
       const days = select ? parseInt(select.value) : 7;
 
-      const getLabels = (n) => {
-            const labels = [];
-            for (let i = n - 1; i >= 0; i--) {
-                  const d = new Date();
-                  d.setDate(d.getDate() - i);
-                  labels.push(d.toLocaleDateString('en-US', { weekday: 'short' }));
-            }
-            return labels;
-      };
+      const today = new Date();
+      const startDate = subDays(today, days - 1);
+      const dateRange = eachDayOfInterval({ start: startDate, end: today });
 
-      const labels = getLabels(days);
       const sessions = getSessionData();
+      const sessionMap = {};
+      sessions.forEach(s => {
+            const dStr = format(new Date(s.timestamp), 'yyyy-MM-dd');
+            sessionMap[dStr] = (sessionMap[dStr] || 0) + s.duration;
+      });
 
-      // Aggregate data for chart
-      const dataPoints = [];
-      for (let i = days - 1; i >= 0; i--) {
-            const d = new Date();
-            d.setDate(d.getDate() - i);
-            const dStr = d.toISOString().split('T')[0];
-
-            const dailyTotal = sessions
-                  .filter(s => {
-                        const sDate = new Date(s.timestamp).toISOString().split('T')[0];
-                        return sDate === dStr;
-                  })
-                  .reduce((acc, curr) => acc + curr.duration, 0);
-
-            dataPoints.push(Math.round((dailyTotal / 3600) * 10) / 10); // Hours
-      }
+      const labels = dateRange.map(d => format(d, days === 7 ? 'EEE' : 'MMM d'));
+      const dataPoints = dateRange.map(date => {
+            const dStr = format(date, 'yyyy-MM-dd');
+            return Math.round(((sessionMap[dStr] || 0) / 3600) * 10) / 10;
+      });
 
       const ctx = canvas.getContext('2d');
       const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-      gradient.addColorStop(0, 'rgba(99, 102, 241, 0.5)');
+      gradient.addColorStop(0, 'rgba(99, 102, 241, 0.4)');
       gradient.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
 
       chartInstance = new Chart(ctx, {
@@ -345,32 +341,51 @@ function renderLineChart() {
                         tension: 0.4,
                         fill: true,
                         pointBackgroundColor: '#1e293b',
-                        pointBorderColor: '#6366f1'
+                        pointBorderColor: '#6366f1',
+                        pointRadius: days === 7 ? 4 : 2,
+                        pointHoverRadius: 6
                   }]
             },
             options: {
                   responsive: true,
                   maintainAspectRatio: false,
+                  interaction: {
+                        intersect: false,
+                        mode: 'index'
+                  },
                   plugins: {
                         legend: { display: false },
                         tooltip: {
                               callbacks: {
-                                    label: (ctx) => `${ctx.raw} hrs`
+                                    label: (ctx) => ` ${ctx.raw} hours`
                               },
-                              backgroundColor: 'rgba(30, 41, 59, 0.9)',
-                              padding: 10,
-                              cornerRadius: 8
+                              backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                              titleColor: '#94a3b8',
+                              bodyColor: '#f8fafc',
+                              padding: 12,
+                              cornerRadius: 12,
+                              displayColors: false
                         }
                   },
                   scales: {
                         y: {
                               beginAtZero: true,
-                              grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                              ticks: { color: '#94a3b8' }
+                              grid: { color: 'rgba(255, 255, 255, 0.03)' },
+                              ticks: {
+                                    color: '#64748b',
+                                    padding: 10,
+                                    callback: (val) => val + 'h'
+                              }
                         },
                         x: {
                               grid: { display: false },
-                              ticks: { color: '#94a3b8' }
+                              ticks: {
+                                    color: '#64748b',
+                                    padding: 10,
+                                    maxRotation: 0,
+                                    autoSkip: true,
+                                    maxTicksLimit: days === 7 ? 7 : 10
+                              }
                         }
                   }
             }

@@ -115,7 +115,7 @@ export function renderTimer() {
                  </div>
              </div>
 
-             <button id="btn-zen-stop" class="group relative px-8 py-3 bg-transparent border border-white/10 rounded-full text-slate-400 hover:text-white hover:border-red-500/50 hover:bg-red-500/10 transition-all overflow-hidden">
+             <button id="btn-zen-stop" class="group relative px-8 py-3 bg-transparent border border-white/10 rounded-full text-slate-400 hover:text-white hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-all overflow-hidden">
                   <span class="relative z-10 text-sm font-medium tracking-wider uppercase">End Session</span>
              </button>
         </div>
@@ -180,7 +180,7 @@ export function initTimerLogic() {
                     <span class="material-icons-outlined">pause</span> Pause
                 </button>
                 <button id="btn-reset" class="btn-secondary py-4 rounded-xl font-bold uppercase tracking-wider shadow-lg shadow-red-500/25 transition-all text-white bg-slate-700 hover:bg-slate-600 flex items-center justify-center gap-2">
-                    <span class="material-icons-outlined">restart_alt</span> Reset
+                    <span class="material-icons-outlined">restart_alt</span> Cancel
                 </button>
               `;
                   document.getElementById('btn-pause').addEventListener('click', pauseTimer);
@@ -190,12 +190,17 @@ export function initTimerLogic() {
                 <button id="btn-resume" class="btn-primary py-4 rounded-xl font-bold uppercase tracking-wider shadow-lg shadow-green-500/25 transition-all text-white bg-green-500 hover:bg-green-600 flex items-center justify-center gap-2">
                     <span class="material-icons-outlined">play_arrow</span> Resume
                 </button>
-                <button id="btn-reset" class="btn-secondary py-4 rounded-xl font-bold uppercase tracking-wider shadow-lg shadow-red-500/25 transition-all text-white bg-slate-700 hover:bg-slate-600 flex items-center justify-center gap-2">
-                    <span class="material-icons-outlined">restart_alt</span> Reset
+                <button id="btn-finish-early" class="btn-secondary py-4 rounded-xl font-bold uppercase tracking-wider shadow-lg shadow-primary/25 transition-all text-white bg-indigo-600 hover:bg-indigo-500 flex items-center justify-center gap-2">
+                    <span class="material-icons-outlined">check_circle</span> Finish
                 </button>
               `;
                   document.getElementById('btn-resume').addEventListener('click', resumeTimer);
-                  document.getElementById('btn-reset').addEventListener('click', resetTimer);
+                  document.getElementById('btn-finish-early').addEventListener('click', () => {
+                        if (confirm('Finish session early and save progress?')) {
+                              const elapsed = initialDuration - remainingArgs;
+                              finishTimer(elapsed);
+                        }
+                  });
             }
       };
 
@@ -213,7 +218,7 @@ export function initTimerLogic() {
                   // Update circle
                   const total = initialDuration;
                   const current = remainingArgs;
-                  const pct = current / total;
+                  const pct = total > 0 ? current / total : 0;
                   const dashArray = 942; // 2 * pi * 150
                   zenProgress.style.strokeDashoffset = dashArray * (1 - pct);
             }
@@ -241,6 +246,9 @@ export function initTimerLogic() {
 
             isRunning = true;
             isPaused = false;
+
+            // Lock Navigation
+            document.dispatchEvent(new CustomEvent('toggle-nav', { detail: { locked: true } }));
 
             // UI Transition
             setupView.classList.add('hidden');
@@ -272,7 +280,7 @@ export function initTimerLogic() {
                         remainingArgs--;
                         updateDisplay();
                   } else {
-                        finishTimer();
+                        finishTimer(); // Time ran out, full duration
                   }
             }, 1000);
       }
@@ -301,11 +309,14 @@ export function initTimerLogic() {
             document.title = 'StudyGo';
             window.onbeforeunload = null;
 
+            // Unlock Navigation
+            document.dispatchEvent(new CustomEvent('toggle-nav', { detail: { locked: false } }));
+
             // UI Reset
             setupView.classList.remove('hidden');
             countdownView.classList.add('hidden');
             selectSub.disabled = false;
-            selectTopic.disabled = !selectSub.value; // Reset based on selection logic (or just leave enabled if valid)
+            selectTopic.disabled = !selectSub.value; // Reset based on selection logic
             if (selectSub.value && getSubjects().find(s => s.id === selectSub.value).topics.length > 0) selectTopic.disabled = false;
 
             document.getElementById('timer-status').textContent = 'IDLE';
@@ -317,28 +328,37 @@ export function initTimerLogic() {
             renderControls('idle');
       }
 
-      function finishTimer() {
+      function finishTimer(actualDuration = null) {
             clearInterval(timerInterval);
             isRunning = false;
             window.onbeforeunload = null;
 
-            // Save Session
-            const session = {
-                  id: Date.now().toString(),
-                  subjectId: currentSubjectId,
-                  topicId: currentTopicId,
-                  duration: initialDuration,
-                  timestamp: Date.now()
-            };
-            addSession(session);
+            // Unlock Navigation
+            document.dispatchEvent(new CustomEvent('toggle-nav', { detail: { locked: false } }));
 
-            // Notification
-            try {
-                  const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-                  audio.play().catch(e => console.log('Audio play failed', e));
-            } catch (e) { }
+            const durationToSave = actualDuration !== null ? actualDuration : initialDuration;
 
-            alert('Session Complete! Great work.');
+            // Only save if meaningful duration (> 1 minute maybe? User didn't specify, saving all)
+            if (durationToSave > 0) {
+                  // Save Session
+                  const session = {
+                        id: Date.now().toString(),
+                        subjectId: currentSubjectId,
+                        topicId: currentTopicId,
+                        duration: durationToSave,
+                        timestamp: Date.now()
+                  };
+                  addSession(session);
+
+                  // Notification
+                  try {
+                        const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+                        audio.play().catch(e => console.log('Audio play failed', e));
+                  } catch (e) { }
+
+                  alert(`Session Complete! Saved ${Math.round(durationToSave / 60)} minutes.`);
+            }
+
             resetTimer();
 
             document.dispatchEvent(new CustomEvent('nav-refresh'));
@@ -346,8 +366,9 @@ export function initTimerLogic() {
 
       if (btnZenStop) {
             btnZenStop.addEventListener('click', () => {
-                  if (confirm('Stop current session? Progress will be lost.')) {
-                        resetTimer();
+                  if (confirm('End session and save progress?')) {
+                        const elapsed = initialDuration - remainingArgs;
+                        finishTimer(elapsed);
                   }
             });
       }
