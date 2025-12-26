@@ -111,7 +111,7 @@ export function renderDashboard() {
     return `
         <header class="mb-8 flex items-center justify-between animate-fade-in">
             <div>
-                <h2 class="text-3xl font-bold text-white mb-2">Welcome back, Scholar</h2>
+                <h2 class="text-3xl font-bold text-white mb-2">Your Study Home</h2>
                 <p class="text-slate-400">Here is your daily progress overview.</p>
             </div>
             
