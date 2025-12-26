@@ -214,7 +214,7 @@ export function initTimerLogic() {
             document.title = `${timeStr} - Focus`;
 
             if (isZenMode && zenDisplay) {
-                  zenDisplay.textContent = `${hrs}:${mins}`; // Zen minimal
+                  zenDisplay.textContent = hrs > 0 ? `${hrs}:${mins}:${secs}` : `${mins}:${secs}`;
                   // Update circle
                   const total = initialDuration;
                   const current = remainingArgs;
