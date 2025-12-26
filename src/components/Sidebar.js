@@ -56,10 +56,10 @@ export function renderSidebar(activeView = 'dashboard', isCollapsed = false) {
             ${version}
         </div>
         
-        <!-- Settings Button -->
-        <button id="btn-settings" class="w-full text-left px-3 py-3 rounded-xl hover:bg-white/5 text-slate-400 hover:text-white transition-colors flex items-center justify-center ${isCollapsed ? '' : 'md:justify-start md:gap-3'} group relative overflow-hidden">
-             <span class="material-icons-outlined group-hover:rotate-45 transition-transform duration-500 text-2xl">settings</span>
-             <span class="${isCollapsed ? 'hidden' : 'block'} text-sm font-medium">Settings</span>
+        <!-- Logout Button -->
+        <button id="btn-logout" class="w-full text-left px-3 py-3 rounded-xl hover:bg-red-500/10 text-slate-400 hover:text-red-400 transition-colors flex items-center justify-center ${isCollapsed ? '' : 'md:justify-start md:gap-3'} group relative overflow-hidden">
+             <span class="material-icons-outlined transition-transform duration-500 text-2xl">logout</span>
+             <span class="${isCollapsed ? 'hidden' : 'block'} text-sm font-medium">Logout</span>
         </button>
     </div>
   `;

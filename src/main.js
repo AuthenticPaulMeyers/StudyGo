@@ -210,11 +210,14 @@ function attachSidebarEvents() {
             });
       }
 
-      // Settings
-      const btnSettings = document.getElementById('btn-settings');
-      if (btnSettings) {
-            btnSettings.addEventListener('click', () => {
-                  alert("Global settings coming soon! Edit Weekly Goal on Dashboard.");
+      // Logout
+      const btnLogout = document.getElementById('btn-logout');
+      if (btnLogout) {
+            btnLogout.addEventListener('click', async () => {
+                  if (confirm("Are you sure you want to log out?")) {
+                        await supabase.auth.signOut();
+                        location.reload();
+                  }
             });
       }
 
