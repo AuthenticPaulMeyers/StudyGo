@@ -59,7 +59,10 @@ export const getDB = async () => {
       return {
             subjects: subjects || [],
             sessions: sessions || [],
-            settings: profile || getLocalSettings()
+            settings: {
+                  ...(profile || getLocalSettings()),
+                  username: profile?.username || user.user_metadata?.username || "Learner"
+            }
       };
 };
 

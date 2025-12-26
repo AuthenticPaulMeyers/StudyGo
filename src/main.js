@@ -39,6 +39,7 @@ async function renderAuth(errorMessage = null) {
                   <p class="text-slate-400 mb-8 max-w-md">Track your study grind.</p>
                   <div class="bg-surface border border-white/10 p-8 rounded-3xl shadow-2xl w-full max-w-sm">
                         ${errorMessage ? `<div class="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-xl mb-4 text-sm">${errorMessage}</div>` : ''}
+                        <input type="text" id="auth-username" placeholder="Username (for Signup)" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white mb-4 outline-none focus:border-primary/50">
                         <input type="email" id="auth-email" placeholder="Email" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white mb-4 outline-none focus:border-primary/50">
                         <input type="password" id="auth-password" placeholder="Password" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white mb-6 outline-none focus:border-primary/50">
                         <div class="flex flex-col gap-3">
@@ -64,15 +65,46 @@ async function renderAuth(errorMessage = null) {
       });
 
       document.getElementById('btn-signup')?.addEventListener('click', async () => {
+            const username = document.getElementById('auth-username').value;
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
-            const { error } = await supabase.auth.signUp({ email, password });
+
+            if (!username) {
+                  const errEl = document.getElementById('auth-error');
+                  errEl.innerText = "Username is required for signup!";
+                  errEl.classList.remove('hidden');
+                  return;
+            }
+
+            const { data, error } = await supabase.auth.signUp({
+                  email,
+                  password,
+                  options: {
+                        emailRedirectTo: window.location.origin,
+                        data: {
+                              username: username
+                        }
+                  }
+            });
+
             if (error) {
                   const errEl = document.getElementById('auth-error');
                   errEl.innerText = error.message;
                   errEl.classList.remove('hidden');
             } else {
-                  alert("Check your email for confirmation!");
+                  const viewContainer = document.querySelector('#view-container');
+                  viewContainer.innerHTML = `
+                        <div class="flex flex-col items-center justify-center min-h-[60vh] text-center p-8 animate-fade-in">
+                              <div class="w-20 h-20 bg-primary/20 text-primary rounded-full flex items-center justify-center mb-6">
+                                    <span class="material-icons-outlined text-4xl">mark_email_read</span>
+                              </div>
+                              <h2 class="text-3xl font-bold text-white mb-4">Check your inbox!</h2>
+                              <p class="text-slate-400 mb-8 max-w-sm">We've sent a verification link to <span class="text-white font-medium">${email}</span>. Please click it to activate your account.</p>
+                              <button onclick="location.reload()" class="text-primary hover:text-indigo-400 font-medium flex items-center gap-2">
+                                    <span class="material-icons-outlined text-sm">arrow_back</span> Back to Login
+                              </button>
+                        </div>
+                  `;
             }
       });
 }
