@@ -1,20 +1,43 @@
 import Chart from 'chart.js/auto';
 import { getDB, getSubjects } from '../utils/storage.js';
-import { eachDayOfInterval, subDays, format, startOfWeek } from 'date-fns';
+import { eachDayOfInterval, subDays, format, startOfWeek, endOfYear, startOfYear } from 'date-fns';
 import { openModal, closeModal } from './Modal.js';
 
 let chartInstance = null;
+let selectedYear = new Date().getFullYear();
 
 export function renderActivityGraph() {
       // Structure based on GitHub contribution graph layout
       const db = getDB();
-      const sessionCount = db.sessions ? db.sessions.length : 0;
+      const sessions = db.sessions || [];
+
+      // Calculate total sessions for selected year
+      const yearStart = startOfYear(new Date(selectedYear, 0, 1));
+      const yearEnd = endOfYear(new Date(selectedYear, 11, 31));
+      const sessionCount = sessions.filter(s => {
+            const d = new Date(s.timestamp);
+            return d >= yearStart && d <= yearEnd;
+      }).length;
+
+      // Dynamic Year List (Starting from 2025)
+      const currentYear = new Date().getFullYear();
+      const startYear = 2025;
+      const years = [];
+      for (let y = Math.max(currentYear, startYear); y >= startYear; y--) {
+            years.push(y);
+      }
+
+      const yearButtons = years.map(y => `
+            <button class="year-btn px-4 py-2 rounded-lg text-xs font-bold transition-all ${y === selectedYear ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'hover:bg-white/5 text-slate-400'}" data-year="${y}">
+                ${y}
+            </button>
+      `).join('');
 
       return `
     <div class="space-y-8">
         <!-- Stats Row -->
         <div class="flex items-center justify-between">
-             <h3 class="text-lg font-bold text-white">${sessionCount} study sessions in the last year</h3>
+             <h3 class="text-lg font-bold text-white">${sessionCount} study sessions in ${selectedYear}</h3>
         </div>
 
         <div class="flex gap-6 items-start">
@@ -60,10 +83,8 @@ export function renderActivityGraph() {
              </div>
 
              <!-- Year Selector Sidebar (Right) -->
-             <div class="w-auto flex flex-col gap-2">
-                 <button class="px-4 py-2 rounded-lg bg-primary text-white text-xs font-bold shadow-lg shadow-primary/20">2025</button>
-                 <button class="px-4 py-2 rounded-lg hover:bg-white/5 text-slate-400 text-xs font-bold transition-colors">2024</button>
-                 <button class="px-4 py-2 rounded-lg hover:bg-white/5 text-slate-400 text-xs font-bold transition-colors">2023</button>
+             <div class="w-auto flex flex-col gap-2" id="year-selector">
+                 ${yearButtons}
              </div>
         </div>
 
@@ -97,6 +118,27 @@ export function initGraphLogic() {
                   const cell = e.target.closest('.day-cell');
                   if (cell && cell.dataset.date) {
                         showDailyDetails(cell.dataset.date);
+                  }
+            });
+      }
+
+      // Year Selector Logic
+      const yearSelector = document.getElementById('year-selector');
+      if (yearSelector) {
+            yearSelector.addEventListener('click', (e) => {
+                  const btn = e.target.closest('.year-btn');
+                  if (btn) {
+                        selectedYear = parseInt(btn.dataset.year);
+
+                        // Re-render whole component to update labels and buttons
+                        const container = document.getElementById('activity-graph-container');
+                        if (container) {
+                              container.innerHTML = renderActivityGraph();
+                              initGraphLogic();
+                        } else {
+                              // Fallback: just update grid if container not found
+                              renderGithubGrid();
+                        }
                   }
             });
       }
@@ -240,10 +282,10 @@ function renderGithubGrid() {
             map[date] = (map[date] || 0) + s.duration;
       });
 
-      const today = new Date();
-      const end = today;
-      const start = subDays(end, 365);
+      const start = startOfYear(new Date(selectedYear, 0, 1));
+      const end = endOfYear(new Date(selectedYear, 0, 1));
       const gridStart = startOfWeek(start);
+      // To show the full year, we often go to the end of the year
       const dates = eachDayOfInterval({ start: gridStart, end: end });
 
       let html = '';

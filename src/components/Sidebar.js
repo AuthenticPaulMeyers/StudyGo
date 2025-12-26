@@ -11,9 +11,13 @@ export function renderSidebar(activeView = 'dashboard', isCollapsed = false) {
     <div class="p-4 mb-2 hidden flex w-full md:flex items-center justify-between">
         <div class="${isCollapsed ? 'hidden' : 'block'} flex-1 whitespace-nowrap overflow-hidden">
             <h1 class="text-2xl font-extrabold tracking-tight">
-                <span class="bg-clip-text text-transparent bg-gradient-to-r from-secondary to-primary">StudyGo</span>
+                <span class="text-primary flex text-center items-center">StudyG
+                    <span class="material-symbols-outlined">
+                        motion_play
+                    </span>
+                </span>
             </h1>
-            <p class="text-[10px] bg-clip-text text-transparent bg-gradient-to-r from-secondary to-primary uppercase tracking-widest font-semibold ml-0.5">Student Companion</p>
+            <p class="text-[10px] text-primary uppercase tracking-widest font-semibold ml-0.5">Student Companion</p>
         </div>
         <div class="${isCollapsed ? 'w-full flex justify-center' : ''}">
              <button id="btn-toggle-sidebar" class="text-slate-400 hover:text-white p-2 rounded-lg hover:bg-white/5 transition-colors">

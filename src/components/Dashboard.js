@@ -126,7 +126,9 @@ export function renderDashboard() {
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Activity Graph (Spans 2 cols) -->
             <div class="lg:col-span-2 space-y-8 animate-slide-up">
-                ${renderActivityGraph()}
+                <div id="activity-graph-container">
+                    ${renderActivityGraph()}
+                </div>
                 
                 <!-- Recent Activity -->
                  <div class="bg-surface/50 backdrop-blur-xl border border-white/5 p-6 rounded-3xl shadow-xl">
@@ -181,7 +183,7 @@ export function renderDashboard() {
                      </h4>
                      <p class="text-emerald-50 text-sm leading-relaxed">
                         ${isGoalMet ?
-            "You've crushed your weekly goal. Maintain your streak or rest up!" :
+            "You've crushed your weekly goal. Maintain your streak!" :
             "Consistency beats intensity. 20 minutes every day is better than 5 hours once a week."
         }
                      </p>
