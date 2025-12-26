@@ -2,7 +2,8 @@
 
 **StudyGO** is a premium, high-performance study companion designed to help students track their learning progress, build consistent study habits, and visualize their academic journey through a beautiful, data-driven interface.
 
-![StudyGO Dashboard](https://github.com/AuthenticPaulMeyers/StudyGo/tree/main/assets/images/dashboard.png)
+<img src="https://github.com/AuthenticPaulMeyers/StudyGo/tree/main/assets/images/dashboard.png" alt="StudyGO Dashboard">
+
 ## Key Features
 
 ### Advanced Data Visualization
