@@ -114,7 +114,7 @@ export function renderDashboard(db) {
         <header class="mb-8 flex items-center justify-between animate-fade-in">
             <div>
                 <h2 class="text-3xl font-bold text-white mb-2">Welcome, ${settings.username}</h2>
-                <p class="text-slate-400 font-mono text-sm tracking-tight opacity-80">Track your daily grind stats, no cap.</p>
+                <p class="text-slate-400">Track your daily grind stats, no cap.</p>
             </div>
             
              <div class="hidden md:flex items-center gap-2 bg-white/5 border border-white/5 px-4 py-2 rounded-xl">

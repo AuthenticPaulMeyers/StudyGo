@@ -1,4 +1,6 @@
 import { getSubjects, addSession } from '../utils/storage.js';
+import { showToast } from './Toast.js';
+import { showConfirm } from './ConfirmModal.js';
 
 let timerInterval;
 let remainingArgs = 0; // seconds
@@ -197,8 +199,8 @@ export function initTimerLogic(db) {
                 </button>
               `;
                   document.getElementById('btn-resume').addEventListener('click', resumeTimer);
-                  document.getElementById('btn-finish-early').addEventListener('click', () => {
-                        if (confirm('Finish session early and save progress?')) {
+                  document.getElementById('btn-finish-early').addEventListener('click', async () => {
+                        if (await showConfirm('You are about to end your session early. Current progress will be saved.', 'Finish Early?')) {
                               const elapsed = initialDuration - remainingArgs;
                               finishTimer(elapsed);
                         }
@@ -228,7 +230,7 @@ export function initTimerLogic(db) {
 
       function startTimer() {
             if (!selectSub.value) {
-                  alert('Please select a subject first!');
+                  showToast('Please select a subject first!', 'error');
                   return;
             }
 
@@ -236,7 +238,7 @@ export function initTimerLogic(db) {
             const mins = parseInt(inpMins.value) || 0;
 
             if (hrs === 0 && mins === 0) {
-                  alert('Please set a duration!');
+                  showToast('Please set a duration for your session!', 'error');
                   return;
             }
 
@@ -352,13 +354,13 @@ export function initTimerLogic(db) {
                   };
                   await addSession(session);
 
+                  showToast(`Mission Accomplished! Saved ${Math.round(durationToSave / 60)} minutes to your grind.`, 'success');
+
                   // Notification
                   try {
                         const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
                         audio.play().catch(e => console.log('Audio play failed', e));
                   } catch (e) { }
-
-                  alert(`Session Complete! Saved ${Math.round(durationToSave / 60)} minutes.`);
             }
 
             resetTimer();
@@ -367,8 +369,8 @@ export function initTimerLogic(db) {
       }
 
       if (btnZenStop) {
-            btnZenStop.addEventListener('click', () => {
-                  if (confirm('End session and save progress?')) {
+            btnZenStop.addEventListener('click', async () => {
+                  if (await showConfirm('You are currently in Zen Mode. Ending now will save your progress up to this point.', 'End Zen Session?')) {
                         const elapsed = initialDuration - remainingArgs;
                         finishTimer(elapsed);
                   }

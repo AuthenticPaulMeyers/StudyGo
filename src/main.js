@@ -5,6 +5,8 @@ import { renderTimer, initTimerLogic } from './components/Timer.js';
 import { renderSubjects, initSubjectsLogic } from './components/Subjects.js';
 
 import { supabase, getDB } from './utils/storage.js';
+import { showToast } from './components/Toast.js';
+import { showConfirm } from './components/ConfirmModal.js';
 
 const sidebarContainer = document.querySelector('#sidebar');
 const mainContent = document.querySelector('#main-content');
@@ -214,7 +216,7 @@ function attachSidebarEvents() {
       const btnLogout = document.getElementById('btn-logout');
       if (btnLogout) {
             btnLogout.addEventListener('click', async () => {
-                  if (confirm("Are you sure you want to log out?")) {
+                  if (await showConfirm("You will need to log back in to access your study history.", "Log Out?")) {
                         await supabase.auth.signOut();
                         location.reload();
                   }

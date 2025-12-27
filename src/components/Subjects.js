@@ -1,5 +1,7 @@
 import { getSubjects, getDB, addTopic, deleteTopic, updateSubjectColor, addSubject, deleteSubject } from '../utils/storage.js';
 import { openModal, closeModal } from './Modal.js';
+import { showToast } from './Toast.js';
+import { showConfirm } from './ConfirmModal.js';
 
 export function renderSubjects(db) {
     if (!db) return '<div class="text-slate-400">Loading subjects...</div>';
@@ -121,8 +123,9 @@ export function initSubjectsLogic(db) {
     document.querySelectorAll('.btn-delete-sub').forEach(btn => {
         btn.addEventListener('click', async (e) => {
             const id = btn.dataset.id;
-            if (confirm('Delete this subject and all its topics?')) {
+            if (await showConfirm('Deleting this subject will permanently remove all associated topics and progress. This action cannot be undone.', 'Delete Subject?')) {
                 await deleteSubject(id);
+                showToast('Subject deleted successfully', 'success');
                 document.dispatchEvent(new CustomEvent('nav-refresh'));
             }
         });
