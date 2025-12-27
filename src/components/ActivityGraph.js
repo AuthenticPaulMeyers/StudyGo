@@ -39,10 +39,10 @@ export function renderActivityGraph(db) {
              <h3 class="text-lg font-bold text-white">${sessionCount} study sessions in ${selectedYear}</h3>
         </div>
 
-        <div class="flex gap-6 items-start">
+        <div class="flex flex-col md:flex-row gap-6 items-start">
              <!-- Graph Container (Left) -->
-             <div class="flex-1 bg-surface/30 border border-white/5 p-4 rounded-xl overflow-hidden relative">
-                  <div class="flex flex-col">
+             <div class="w-full md:flex-1 bg-surface/30 border border-white/5 p-4 rounded-xl overflow-hidden relative">
+                  <div class="flex flex-col min-w-[700px] md:min-w-0 overflow-x-auto custom-scrollbar pb-2">
                       <!-- Month Labels Row -->
                       <div class="flex text-xs text-slate-400 mb-2 pl-8" id="month-labels">
                          <!-- JS will populate -->
@@ -61,15 +61,15 @@ export function renderActivityGraph(db) {
                            </div>
 
                            <!-- The Grid -->
-                           <div class="flex gap-[3px] overflow-x-auto scrollbar-hide" id="github-grid">
+                           <div class="flex gap-[3px]" id="github-grid">
                                 <!-- JS Populated -->
                            </div>
                       </div>
 
-                      <!-- Legend (Bottom Right) -->
-                      <div class="flex items-center justify-end gap-2 text-xs text-slate-400 mt-4">
+                      <!-- Legend -->
+                      <div class="flex items-center justify-end gap-2 text-xs text-slate-400 mt-4 overflow-x-auto whitespace-nowrap">
                            <span>Less</span>
-                           <div class="flex gap-[3px]">
+                           <div class="flex gap-[3px] shrink-0">
                                 <div class="w-[10px] h-[10px] rounded-[2px] bg-[#161b22]"></div>
                                 <div class="w-[10px] h-[10px] rounded-[2px] bg-[#0e4429]"></div>
                                 <div class="w-[10px] h-[10px] rounded-[2px] bg-[#006d32]"></div>
@@ -81,8 +81,8 @@ export function renderActivityGraph(db) {
                   </div>
              </div>
 
-             <!-- Year Selector Sidebar (Right) -->
-             <div class="w-auto flex flex-col gap-2" id="year-selector">
+             <!-- Year Selector (Right on MD+, Bottom on Mobile) -->
+             <div class="w-full md:w-auto flex flex-row md:flex-col gap-2 overflow-x-auto custom-scrollbar pb-2 shrink-0 px-1" id="year-selector">
                  ${yearButtons}
              </div>
         </div>

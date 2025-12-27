@@ -60,11 +60,11 @@ function renderSubjectCard(sub, allSessions) {
                 </div>
             </div>
             
-            <div class="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0" onclick="event.stopPropagation()">
-                <button class="btn-color-picker w-8 h-8 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors" data-id="${sub.id}" title="Change Color">
+            <div class="flex flex-col gap-2 md:opacity-0 md:group-hover:opacity-100 transition-all md:translate-x-4 md:group-hover:translate-x-0" onclick="event.stopPropagation()">
+                <button class="btn-color-picker w-8 h-8 rounded-full border border-white/10 flex items-center justify-center bg-white/5 md:bg-transparent hover:bg-white/10 transition-colors" data-id="${sub.id}" title="Change Color">
                     <div class="w-3 h-3 rounded-full" style="background-color: ${sub.color}"></div>
                 </button>
-                <button class="btn-delete-sub text-slate-500 hover:text-red-400 w-8 h-8 rounded-full border border-white/10 flex items-center justify-center hover:bg-red-500/10 transition-colors" data-id="${sub.id}" title="Delete Subject">
+                <button class="btn-delete-sub text-slate-500 hover:text-red-400 w-8 h-8 rounded-full border border-white/10 flex items-center justify-center bg-white/5 md:bg-transparent hover:bg-red-500/10 transition-colors" data-id="${sub.id}" title="Delete Subject">
                     <span class="material-icons-outlined text-sm">delete</span>
                 </button>
             </div>
@@ -267,16 +267,19 @@ function openSubjectDetailsModal(subjectId, db) {
                  </div>
                  
                  <!-- Enhanced Topic Input UI -->
-                 <div class="bg-white/5 rounded-2xl p-2.5 mb-8 border border-white/5 flex items-center gap-3 group focus-within:border-primary/30 transition-colors overflow-hidden">
-                      <input type="text" id="inp-quick-topic" placeholder="Add new topic..." class="bg-transparent border-none text-white placeholder:text-slate-500 focus:ring-0 flex-1 min-w-0 outline-none font-medium px-2" autocomplete="off">
+                 <div class="bg-white/5 rounded-2xl p-2.5 mb-8 border border-white/5 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 group focus-within:border-primary/30 transition-colors">
+                      <input type="text" id="inp-quick-topic" placeholder="Add new topic..." class="bg-transparent border-none text-white placeholder:text-slate-500 focus:ring-0 flex-1 min-w-0 outline-none font-medium px-2 py-2" autocomplete="off">
                       
-                      <div class="flex items-center bg-slate-900/50 p-1 rounded-xl border border-white/5 shrink-0">
-                           <input type="number" id="inp-quick-hours" placeholder="Target Hrs" class="bg-transparent border-none text-white text-sm w-24 p-1.5 outline-none focus:ring-0 text-center font-mono placeholder:text-slate-600" autocomplete="off">
+                      <div class="flex items-center gap-3">
+                        <div class="flex-1 sm:flex-none flex items-center bg-slate-900/50 p-1 rounded-xl border border-white/5">
+                             <input type="number" id="inp-quick-hours" placeholder="Target Hrs" class="bg-transparent border-none text-white text-sm w-full sm:w-24 p-1.5 outline-none focus:ring-0 text-center font-mono placeholder:text-slate-600" autocomplete="off">
+                        </div>
+  
+                        <button id="btn-quick-add" class="bg-primary hover:bg-indigo-500 text-white w-full sm:w-10 h-10 flex items-center justify-center rounded-xl transition-all hover:scale-105 active:scale-95 shrink-0">
+                             <span class="material-icons-outlined text-lg">add</span>
+                             <span class="sm:hidden ml-2 font-bold">Add Topic</span>
+                        </button>
                       </div>
-
-                      <button id="btn-quick-add" class="bg-white/10 hover:bg-white/20 text-white w-10 h-10 flex items-center justify-center rounded-xl transition-all hover:scale-105 active:scale-95 shrink-0">
-                           <span class="material-icons-outlined text-lg">add</span>
-                      </button>
                  </div>
                  
                  <div class="space-y-3" id="topic-list-container">

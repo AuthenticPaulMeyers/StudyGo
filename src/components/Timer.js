@@ -62,15 +62,15 @@ export function renderTimer(db) {
                  </div>
 
                  <div id="countdown-view" class="hidden transition-all duration-300">
-                     <div id="timer-display" class="text-8xl font-mono font-bold text-center tracking-wider text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 drop-shadow-2xl">
+                     <div id="timer-display" class="text-6xl md:text-8xl font-mono font-bold text-center tracking-wider text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 drop-shadow-2xl">
                         00:00:00
                      </div>
                  </div>
             </div>
 
             <!-- Controls -->
-            <div class="space-y-4 relative z-10">
-                <div class="grid grid-cols-2 gap-4">
+             <div class="space-y-4 relative z-10">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                      <!-- Subject Select -->
                      <div class="relative group">
                         <select id="timer-subject" class="custom-select w-full p-3.5 pl-11 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/40 transition-all appearance-none cursor-pointer text-sm shadow-inner group-hover:bg-white/10">

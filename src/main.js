@@ -213,15 +213,15 @@ function attachSidebarEvents() {
       }
 
       // Logout
-      const btnLogout = document.getElementById('btn-logout');
-      if (btnLogout) {
-            btnLogout.addEventListener('click', async () => {
+      const btnLogouts = document.querySelectorAll('#btn-logout');
+      btnLogouts.forEach(btn => {
+            btn.addEventListener('click', async () => {
                   if (await showConfirm("You will need to log back in to access your study history.", "Log Out?")) {
                         await supabase.auth.signOut();
                         location.reload();
                   }
             });
-      }
+      });
 
       // Nav Buttons
       document.querySelectorAll('.nav-btn').forEach(btn => {

@@ -2,7 +2,7 @@ export function openModal(contentHtml) {
       const container = document.getElementById('modal-container');
       container.innerHTML = `
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity opacity-0" id="modal-backdrop"></div>
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg p-4 transition-all opacity-0 scale-95 origin-center" id="modal-content">
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl p-4 transition-all opacity-0 scale-95 origin-center" id="modal-content">
              ${contentHtml}
         </div>
     `;

@@ -5,7 +5,7 @@ export function renderSidebar(activeView = 'dashboard', isCollapsed = false) {
         { id: 'subjects', icon: 'library_books', label: 'Subjects', color: 'primary' }
     ];
 
-    const version = "v1.0.0";
+    const version = "v1.1.0";
 
     return `
     <div class="p-4 mb-2 hidden flex w-full md:flex items-center justify-between">
@@ -48,6 +48,12 @@ export function renderSidebar(activeView = 'dashboard', isCollapsed = false) {
                 ${activeView === item.id ? `<div class="absolute top-0 md:top-auto md:right-0 md:h-full w-full h-1 md:w-1 rounded-full bg-${item.color} shadow-[0_0_10px_currentColor] md:block hidden"></div>` : ''}
             </button>
         `).join('')}
+        
+        <!-- Mobile Logout -->
+        <button id="btn-logout" class="md:hidden nav-btn w-full text-left px-3 py-3 rounded-xl text-slate-400 hover:text-red-400 transition-all flex flex-col items-center justify-center group">
+             <span class="material-icons-outlined text-2xl mb-1">logout</span>
+             <span class="text-[10px] font-medium">Exit</span>
+        </button>
     </nav>
 
     <div class="p-3 mt-auto hidden w-full md:block">

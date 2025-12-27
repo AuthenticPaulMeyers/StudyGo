@@ -91,18 +91,18 @@ export function renderDashboard(db) {
             }
 
             return `
-                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
-                        <div class="flex items-center gap-3">
-                            <div class="w-2 h-8 rounded-full" style="background-color: ${sub.color}"></div>
-                            <div>
-                                <div class="text-sm font-bold text-slate-200">${sub.name}</div>
-                                <div class="text-xs text-slate-400 flex gap-2">
-                                    <span>${date}</span>
-                                    ${topicName ? `<span class="text-slate-500">• ${topicName}</span>` : ''}
+                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5 gap-4">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="w-1.5 h-8 rounded-full shrink-0" style="background-color: ${sub.color}"></div>
+                            <div class="min-w-0">
+                                <div class="text-sm font-bold text-slate-200 truncate">${sub.name}</div>
+                                <div class="text-xs text-slate-400 flex items-center gap-2">
+                                     <span class="whitespace-nowrap">${date}</span>
+                                     ${topicName ? `<span class="text-slate-500 truncate">• ${topicName}</span>` : ''}
                                 </div>
                             </div>
                         </div>
-                        <div class="text-sm font-mono font-medium text-slate-300">${mins}m</div>
+                        <div class="text-sm font-mono font-medium text-slate-300 shrink-0">${mins}m</div>
                     </div>
                 `;
         }).join('');
