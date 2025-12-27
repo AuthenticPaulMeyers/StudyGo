@@ -72,9 +72,9 @@ export function renderTimer(db) {
             <div class="space-y-4 relative z-10">
                 <div class="grid grid-cols-2 gap-4">
                      <!-- Subject Select -->
-                    <div class="relative">
-                        <select id="timer-subject" class="w-full p-3 pl-10 bg-slate-900/50 border border-slate-700/50 rounded-xl text-white outline-none focus:ring-2 focus:ring-primary/50 transition-all appearance-none cursor-pointer text-sm">
-                            <option value="" disabled selected>Subject</option>
+                     <div class="relative group">
+                        <select id="timer-subject" class="custom-select w-full p-3.5 pl-11 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/40 transition-all appearance-none cursor-pointer text-sm shadow-inner group-hover:bg-white/10">
+                            <option value="" disabled selected>Select Subject</option>
                             ${subjects.length ? subOptions : ''}
                         </select>
                         <span class="material-icons-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">category</span>
@@ -82,8 +82,8 @@ export function renderTimer(db) {
                     </div>
                     
                     <!-- Topic Select -->
-                    <div class="relative">
-                        <select id="timer-topic" class="w-full p-3 pl-10 bg-slate-900/50 border border-slate-700/50 rounded-xl text-white outline-none focus:ring-2 focus:ring-primary/50 transition-all appearance-none cursor-pointer text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    <div class="relative group">
+                        <select id="timer-topic" class="custom-select w-full p-3.5 pl-11 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/40 transition-all appearance-none cursor-pointer text-sm disabled:opacity-40 disabled:cursor-not-allowed shadow-inner group-hover:bg-white/10" disabled>
                             <option value="" selected>Topic (Optional)</option>
                         </select>
                         <span class="material-icons-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">topic</span>

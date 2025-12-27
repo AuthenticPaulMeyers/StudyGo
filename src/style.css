@@ -128,3 +128,20 @@ input[type="number"]::-webkit-outer-spin-button {
 .animate-toast-out {
   animation: toastOut 0.2s ease-in forwards;
 }
+
+/* Custom Select Styling */
+.custom-select {
+  color-scheme: dark;
+}
+
+.custom-select option {
+  background-color: #1e293b;
+  color: #f8fafc;
+  padding: 10px;
+}
+
+/* Focus states for premium inputs */
+.custom-select:focus {
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
