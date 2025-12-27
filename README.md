@@ -1,41 +1,43 @@
-# StudyGO
+# StudyGO v1.1.0
 
-**StudyGO** is a premium, high-performance study companion designed to help students track their learning progress, build consistent study habits, and visualize their academic journey through a beautiful, data-driven interface.
+**StudyGO** is a premium, high-performance study companion designed to help students track their learning progress, build consistent study habits, and visualize their academic journey through a beautiful, cloud-synced interface.
 
 <img src="assets/images/dashboard.png" alt="StudyGO Dashboard">
 
 ## Key Features
 
+### Secure Authentication & Personalization
+*   **Custom Profiles**: Sign up with a unique username that personalizes your entire dashboard experience.
+*   **Secure Sign-In**: Powered by Supabase Auth for high-security email/password protection.
+*   **Instant Access**: Re-designed login/signup flows with real-time validation and smooth transitions.
+
 ### Advanced Data Visualization
 *   **Activity Heatmap**: A GitHub-inspired contribution grid that tracks your study frequency over the entire year.
-*   **Dynamic Year Selector**: Effortlessly browse your study history year-by-year (starting from 2025).
-*   **Trend Analysis**: Toggle between 7-day and 30-day view on the interactive line chart to see your focus hours evolve.
+*   **Dynamic Year Selector**: Effortlessly browse your study history year-by-year.
+*   **Focus Analytics**: Interactive line charts powered by Chart.js to visualize focus hours over 7 or 30 days.
 
 ### Immersive Focus Timer
 *   **Zen Mode**: A distraction-free "Flow State" overlay with a minimalist countdown and circular progress ring.
-*   **Subject & Topic Tracking**: Tag every session to specific subjects and topics for granular reporting.
-*   **Quick Presets**: Jump straight into deep work with 15, 25, 45, or 60-minute presets.
+*   **Granular Tracking**: Link sessions directly to specific subjects and topics for precise progress reporting.
+*   **Quick Presets**: Rapid-start buttons (15m, 25m, 45m, 60m) to jump straight into deep work.
+
+### Premium UI/UX
+*   **Custom Notification System**: Aesthetic "Toast" notifications for instant feedback without browser alerts.
+*   **Contextual Modals**: Beautifully blurred confirmation pop-ups for critical actions like deletion or logouts.
+*   **High-Speed Navigation**: JavaScript-optimized view transitions that make the app feel instant and responsive.
 
 ### Goal Management
-*   **Automated Weekly Goals**: Your weekly target is intelligently calculated by summing up the custom hour goals you've set for your subjects and topics.
-*   **Real-time Progress**: Track exactly how many hours are remaining for the week and celebrate with a confetti burst when you hit your target!
+*   **Dynamic Weekly Targets**: Automatically calculates your goal based on individual subject and topic targets.
+*   **Victory Celebration**: Confetti bursts celebrate your wins when you hit your weekly study milestones!
 
-### Subject & Topic Organization
-*   **Color-Coded Subjects**: Assign vibrant colors to different disciplines for quick visual identification.
-*   **Granular Topics**: Break down complex subjects into manageable topics with individual target hours and progress tracking.
+## Tech Stack
 
-### Modern Aesthetic
-*   **Dark Mode by Default**: A sleek, high-contrast interface designed for late-night study sessions.
-*   **Responsive Sidebar**: A collapsible navigation system that stays out of your way when you're in the zone.
-
-## Tech Stack Used
-
-*   **Core**: HTML5, Vanilla JavaScript (ES6+)
-*   **Styling**: Tailwind CSS
-*   **Charts**: Chart.js
-*   **Date Logic**: date-fns
-*   **Animations**: Framer Motion-inspired CSS animations & Canvas Confetti
-*   **Storage**: LocalStorage (Privacy-first: your data never leaves your browser)
+*   **Frontend**: Vanilla JavaScript (ES6+), HTML5
+*   **Styling**: Tailwind CSS & CSS3 Animations
+*   **Backend & DB**: Supabase (PostgreSQL, Real-time Sync, RLS Security)
+*   **Visualization**: Chart.js
+*   **Date Processing**: date-fns
+*   **Effects**: Canvas Confetti
 
 ## Getting Started
 
@@ -47,18 +49,19 @@
     ```bash
     npm install
     ```
-3.  **Run in development mode**:
+3.  **Environment Variables**:
+    Create a `.env` file in the root and add your Supabase credentials:
+    ```env
+    VITE_SUPABASE_URL=your_project_url
+    VITE_SUPABASE_ANON_KEY=your_anon_key
+    ```
+4.  **Run in development mode**:
     ```bash
     npm run dev
     ```
-4.  **Build for production**:
-    ```bash
-    npm run build
-    ```
 
-## Privacy
-StudyGo is built with a focus on privacy. All study sessions, subjects, and settings are stored locally on your device using `localStorage`. No data is sent to any external server.
+## Security & Privacy
+With the migration to Supabase, your data is now securely stored in the cloud, allowing you to access your study history across multiple devices. All data is protected by **Row Level Security (RLS)**, ensuring that only you can access your personal study logs and settings.
 
 ---
 *Built with 💖 for students who strive for excellence. Stay focused, stay consistent.*
-
