@@ -9,11 +9,11 @@
 ### Secure Authentication & Personalization
 *   **Custom Profiles**: Sign up with a unique username that personalizes your entire dashboard experience.
 *   **Secure Sign-In**: Powered by Supabase Auth for high-security email/password protection.
-*   **Instant Access**: Re-designed login/signup flows with real-time validation and smooth transitions.
+*   **Instant Access**: Login/signup flows with real-time validation and smooth transitions.
 
 ### Advanced Data Visualization
-*   **Activity Heatmap**: A GitHub-inspired contribution grid that tracks your study frequency over the entire year.
-*   **Dynamic Year Selector**: Effortlessly browse your study history year-by-year.
+*   **Activity Heatmap**: A GitHub-inspired contribution grid that tracks study frequency over the entire year.
+*   **Dynamic Year Selector**: Effortlessly browse study history year-by-year.
 *   **Focus Analytics**: Interactive line charts powered by Chart.js to visualize focus hours over 7 or 30 days.
 
 ### Immersive Focus Timer
@@ -27,8 +27,8 @@
 *   **High-Speed Navigation**: JavaScript-optimized view transitions that make the app feel instant and responsive.
 
 ### Goal Management
-*   **Dynamic Weekly Targets**: Automatically calculates your goal based on individual subject and topic targets.
-*   **Victory Celebration**: Confetti bursts celebrate your wins when you hit your weekly study milestones!
+*   **Dynamic Weekly Targets**: Automatically calculates weekly study goals based on individual subject and topic targets.
+*   **Victory Celebration**: Confetti bursts celebrate wins when you hit weekly study milestones!
 
 ## Tech Stack
 
@@ -61,7 +61,7 @@
     ```
 
 ## Security & Privacy
-With the migration to Supabase, your data is now securely stored in the cloud, allowing you to access your study history across multiple devices. All data is protected by **Row Level Security (RLS)**, ensuring that only you can access your personal study logs and settings.
+With the migration to Supabase, data is now securely stored in the cloud, allowing users to access study history across multiple devices. All data is protected by **Row Level Security (RLS)**, ensuring that only users can access their personal study logs and settings.
 
 ---
-*Built with 💖 for students who strive for excellence. Stay focused, stay consistent.*
+*Built with 💖 for students who strive for excellence. Lock In, Grind.*
