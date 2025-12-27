@@ -84,7 +84,7 @@ export function renderTimer(db) {
                     <!-- Topic Select -->
                     <div class="relative group">
                         <select id="timer-topic" class="custom-select w-full p-3.5 pl-11 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/40 transition-all appearance-none cursor-pointer text-sm disabled:opacity-40 disabled:cursor-not-allowed shadow-inner group-hover:bg-white/10" disabled>
-                            <option value="" selected>Topic (Optional)</option>
+                            <option value="" selected disabled>Select Topic</option>
                         </select>
                         <span class="material-icons-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">topic</span>
                         <span class="material-icons-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-lg">expand_more</span>
@@ -154,7 +154,7 @@ export function initTimerLogic(db) {
             const subjects = db.subjects || [];
             const sub = subjects.find(s => s.id === subId);
 
-            selectTopic.innerHTML = '<option value="" selected>Topic (Optional)</option>';
+            selectTopic.innerHTML = '<option value="" disabled selected>Select Topic</option>';
 
             if (sub && sub.topics && sub.topics.length > 0) {
                   selectTopic.disabled = false;
