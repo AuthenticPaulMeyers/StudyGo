@@ -8,7 +8,7 @@ export function renderSubjects(db) {
     const subjects = db.subjects || [];
 
     return `
-    <div class="max-w-7xl mx-auto space-y-8 animate-fade-in">
+    <div class="max-w-7xl mx-auto space-y-8 animate-fade-in mb-10">
         <header class="flex items-center justify-between">
             <div>
                 <h2 class="text-3xl font-bold text-white">Subjects & Goals</h2>
