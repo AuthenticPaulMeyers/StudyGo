@@ -2,7 +2,10 @@
 
 **StudyGO** is a premium, high-performance study companion designed to help students track their learning progress, build consistent study habits, and visualize their academic journey through a beautiful, cloud-synced interface.
 
+<img src="assets/images/login.png" alt="StudyGO Login">
 <img src="assets/images/dashboard.png" alt="StudyGO Dashboard">
+<img src="assets/images/subjects.png" alt="StudyGO Subjects">
+<img src="assets/images/timer.png" alt="StudyGO Focus Timer">
 
 ## Key Features
 
