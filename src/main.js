@@ -32,7 +32,7 @@ async function renderAuth(errorMessage = null) {
 
       const renderForm = () => {
             container.innerHTML = `
-                  <div class="flex flex-col items-center justify-center min-h-[60vh] text-center p-8 animate-fade-in">
+                  <div class="flex flex-col items-center justify-center min-h-[60vh] text-center py-8 px-2 animate-fade-in">
                         <h2 class="font-extrabold mb-4">
                               <span class="text-primary flex text-center items-center text-4xl font-black">StudyG
                                     <span class="material-symbols-outlined text-3xl">motion_play</span>

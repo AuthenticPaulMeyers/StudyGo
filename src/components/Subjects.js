@@ -14,9 +14,9 @@ export function renderSubjects(db) {
                 <h2 class="text-3xl font-bold text-white">Subjects & Goals</h2>
                 <p class="text-slate-400">Manage learning paths and track specific topic progress.</p>
             </div>
-            <button id="btn-add-subject" class="bg-primary hover:bg-indigo-500 shadow-lg shadow-primary/25 text-white px-5 py-3 rounded-2xl flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
+            <button id="btn-add-subject" class="bg-primary hover:bg-indigo-500 shadow-lg shadow-primary/25 text-white px-4 py-3 rounded-2xl flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
                 <span class="material-icons-outlined">add</span>
-                New Subject
+                New
             </button>
         </header>
 
@@ -166,7 +166,7 @@ function openAddSubjectModal() {
 
                 <div class="flex justify-end gap-3 pt-6 border-t border-white/5">
                     <button id="btn-cancel-sub" class="text-slate-400 hover:text-white px-5 py-3 rounded-xl hover:bg-white/5 transition-colors font-medium">Cancel</button>
-                    <button id="btn-save-sub" class="bg-primary hover:bg-indigo-500 text-white px-6 py-3 rounded-xl font-bold transition-all hover:shadow-lg hover:shadow-primary/25">Create Subject</button>
+                    <button id="btn-save-sub" class="bg-primary hover:bg-indigo-500 text-white py-2 px-3 rounded-xl font-bold transition-all hover:shadow-lg hover:shadow-primary/25">Create Subject</button>
                 </div>
              </div>
         </div>
@@ -261,7 +261,7 @@ function openSubjectDetailsModal(subjectId, db) {
              </div>
              
              <!-- Content -->
-             <div class="flex-1 overflow-y-auto p-8 custom-scrollbar">
+             <div class="flex-1 overflow-y-auto py-8 px-2 custom-scrollbar">
                  <div class="flex items-center justify-between mb-4">
                      <h4 class="text-lg font-bold text-white">Topics & Progress</h4>
                  </div>
@@ -270,8 +270,8 @@ function openSubjectDetailsModal(subjectId, db) {
                  <div class="bg-white/5 rounded-2xl p-2.5 mb-8 border border-white/5 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 group focus-within:border-primary/30 transition-colors">
                       <input type="text" id="inp-quick-topic" placeholder="Add new topic..." class="bg-transparent border-none text-white placeholder:text-slate-500 focus:ring-0 flex-1 min-w-0 outline-none font-medium px-2 py-2" autocomplete="off">
                       
-                      <div class="flex items-center gap-3">
-                        <div class="flex-1 sm:flex-none flex items-center bg-slate-900/50 p-1 rounded-xl border border-white/5">
+                      <div class="flex items-center gap-3 flex-col flex-1">
+                        <div class="flex-1 sm:flex-none w-full flex items-center bg-slate-900/50 p-1 rounded-xl border border-white/5">
                              <input type="number" id="inp-quick-hours" placeholder="Target Hrs" class="bg-transparent border-none text-white text-sm w-full sm:w-24 p-1.5 outline-none focus:ring-0 text-center font-mono placeholder:text-slate-600" autocomplete="off">
                         </div>
   

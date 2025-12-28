@@ -133,7 +133,7 @@ export function renderDashboard(db) {
                 </div>
                 
                 <!-- Recent Activity -->
-                 <div class="bg-surface/50 backdrop-blur-xl border border-white/5 p-6 rounded-3xl shadow-xl">
+                 <div class="bg-surface/50 backdrop-blur-xl border border-white/5 py-6 px-3 rounded-3xl shadow-xl">
                     <h3 class="text-lg font-bold text-white mb-4">Recent Sessions</h3>
                     ${recentSessions.length > 0 ? `
                         <div class="space-y-3">
@@ -149,7 +149,7 @@ export function renderDashboard(db) {
             </div>
 
             <!-- Side Stats (right col) -->
-            <div class="space-y-8 animate-slide-up" style="animation-delay: 10ms;">
+            <div class="space-y-8 animate-slide-up mb-10" style="animation-delay: 10ms;">
                  <!-- Goals Card -->
                  <div class="bg-gradient-to-br from-primary to-indigo-600 p-6 rounded-3xl shadow-lg shadow-primary/20 text-white relative overflow-hidden group hover:scale-[1.02] transition-transform duration-100">
                     <div class="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-xl group-hover:bg-white/20 transition-colors"></div>

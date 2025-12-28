@@ -52,7 +52,7 @@ export function renderSidebar(activeView = 'dashboard', isCollapsed = false) {
         <!-- Mobile Logout -->
         <button id="btn-logout" class="md:hidden nav-btn w-full text-left px-3 py-3 rounded-xl text-slate-400 hover:text-red-400 transition-all flex flex-col items-center justify-center group">
              <span class="material-icons-outlined text-2xl mb-1">logout</span>
-             <span class="text-[10px] font-medium">Exit</span>
+             <span class="text-[10px] font-medium">Log Out</span>
         </button>
     </nav>
 

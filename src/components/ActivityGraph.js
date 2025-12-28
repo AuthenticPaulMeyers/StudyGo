@@ -88,7 +88,7 @@ export function renderActivityGraph(db) {
         </div>
 
         <!-- Line Chart Container -->
-        <div class="bg-surface/50 backdrop-blur-xl border border-white/5 p-6 rounded-3xl shadow-xl">
+        <div class="bg-surface/50 backdrop-blur-xl border border-white/5 py-6 px-3 rounded-3xl shadow-xl">
              <div class="flex items-center justify-between mb-6">
                  <h3 class="text-lg font-bold text-white flex items-center gap-2">
                     <span class="material-icons-outlined text-primary">show_chart</span>
