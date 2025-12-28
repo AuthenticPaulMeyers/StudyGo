@@ -44,13 +44,13 @@ export function renderActivityGraph(db) {
              <div class="w-full md:flex-1 bg-surface/30 border border-white/5 p-4 rounded-xl overflow-hidden relative">
                   <div class="flex flex-col min-w-[700px] md:min-w-0 overflow-x-auto custom-scrollbar pb-2">
                       <!-- Month Labels Row -->
-                      <div class="flex text-xs text-slate-400 mb-2 pl-8" id="month-labels">
+                      <div class="flex text-xs text-slate-400 mb-2 pl-[35px] gap-[3px]" id="month-labels">
                          <!-- JS will populate -->
                       </div>
                       
                       <div class="flex gap-2">
                            <!-- Day Labels Col -->
-                           <div class="flex flex-col gap-[3px] text-[10px] text-slate-500 pt-[0px]" id="day-labels">
+                           <div class="flex flex-col gap-[3px] text-[10px] text-slate-500 pt-[0px] w-[27px] shrink-0" id="day-labels">
                                 <div class="h-[10px]"></div> <!-- Spacer to align with cells-->
                                 <div class="h-[10px] leading-[10px]">Mon</div>
                                 <div class="h-[10px]"></div>
@@ -288,7 +288,7 @@ function renderGithubGrid(db) {
       const dates = eachDayOfInterval({ start: gridStart, end: end });
 
       let html = '';
-      let currentColumnHtml = '<div class="flex flex-col gap-[3px]">';
+      let currentColumnHtml = '<div class="flex flex-col gap-[3px] shrink-0">';
       let daysInCol = 0;
 
       dates.forEach((date, i) => {
@@ -311,7 +311,7 @@ function renderGithubGrid(db) {
             if (daysInCol === 7) {
                   currentColumnHtml += '</div>';
                   html += currentColumnHtml;
-                  currentColumnHtml = '<div class="flex flex-col gap-[3px]">';
+                  currentColumnHtml = '<div class="flex flex-col gap-[3px] shrink-0">';
                   daysInCol = 0;
             }
       });
@@ -329,10 +329,10 @@ function renderGithubGrid(db) {
             const d = dates[i];
             const m = d.getMonth();
             if (m !== cM) {
-                  labelRow += `<div class="w-[10px] text-xs overflow-visible text-slate-500">${format(d, 'MMM')}</div><div class="w-[3px]"></div>`;
+                  labelRow += `<div class="w-[10px] shrink-0 text-[10px] overflow-visible text-slate-500">${format(d, 'MMM')}</div>`;
                   cM = m;
             } else {
-                  labelRow += `<div class="w-[10px]"></div><div class="w-[3px]"></div>`;
+                  labelRow += `<div class="w-[10px] shrink-0"></div>`;
             }
       }
       monthContainer.innerHTML = labelRow;
