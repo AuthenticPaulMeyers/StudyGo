@@ -41,7 +41,7 @@ export function renderActivityGraph(db) {
 
         <div class="flex flex-col md:flex-row gap-6 items-start">
              <!-- Graph Container (Left) -->
-             <div class="w-full md:flex-1 bg-surface/30 border border-white/5 p-4 rounded-xl overflow-hidden relative">
+             <div class="w-full md:flex-1 bg-surface/30 border border-white/5 p-4 rounded-xl relative">
                   <div class="flex flex-col min-w-[700px] md:min-w-0 overflow-x-auto custom-scrollbar pb-2">
                       <!-- Month Labels Row -->
                       <div class="flex text-xs text-slate-400 mb-2 pl-[35px] gap-[3px]" id="month-labels">
