@@ -10,6 +10,25 @@ let isPaused = false;
 let currentSubjectId = null;
 let currentTopicId = null;
 let isZenMode = false;
+const STORAGE_KEY = 'studygo_active_session';
+
+function saveTimerState() {
+      const state = {
+            remainingArgs,
+            initialDuration,
+            isRunning,
+            isPaused,
+            currentSubjectId,
+            currentTopicId,
+            isZenMode,
+            lastUpdated: Date.now()
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function clearTimerState() {
+      localStorage.removeItem(STORAGE_KEY);
+}
 
 export function renderTimer(db) {
       if (!db) return '<div class="text-slate-400">Loading timer...</div>';
@@ -23,7 +42,7 @@ export function renderTimer(db) {
             <div class="absolute inset-0 bg-gradient-to-br from-primary/10 to-secondary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
             
             <header class="flex justify-between items-center mb-8 relative z-10">
-                <h2 class="text-2xl font-bold text-white">Focus Timer</h2>
+                <h2 class="text-2xl font-bold text-white">Grind Mode</h2>
                 <div class="px-3 py-1 bg-white/5 rounded-full text-xs font-mono text-slate-400 transform transition-all" id="timer-status">IDLE</div>
             </header>
             
@@ -226,6 +245,7 @@ export function initTimerLogic(db) {
                   const dashArray = 942; // 2 * pi * 150
                   zenProgress.style.strokeDashoffset = dashArray * (1 - pct);
             }
+            saveTimerState();
       };
 
       function startTimer() {
@@ -273,6 +293,7 @@ export function initTimerLogic(db) {
 
             updateDisplay();
             renderControls('running');
+            saveTimerState();
 
             runInterval();
       }
@@ -295,6 +316,7 @@ export function initTimerLogic(db) {
             document.getElementById('timer-status').textContent = 'PAUSED';
             document.getElementById('timer-status').className = 'px-3 py-1 bg-yellow-500/20 text-yellow-500 rounded-full text-xs font-mono';
             renderControls('paused');
+            saveTimerState();
       }
 
       function resumeTimer() {
@@ -302,6 +324,7 @@ export function initTimerLogic(db) {
             document.getElementById('timer-status').textContent = 'DEEP WORK';
             document.getElementById('timer-status').className = 'px-3 py-1 bg-primary/20 text-primary rounded-full text-xs font-mono animate-pulse';
             renderControls('running');
+            saveTimerState();
             runInterval();
       }
 
@@ -312,6 +335,8 @@ export function initTimerLogic(db) {
             remainingArgs = 0;
             currentSubjectId = null;
             currentTopicId = null;
+
+            clearTimerState();
 
             // Unlock Navigation
             document.dispatchEvent(new CustomEvent('toggle-nav', { detail: { locked: false } }));
@@ -401,4 +426,64 @@ export function initTimerLogic(db) {
 
       // Init Events
       renderControls('idle');
+
+      // Check for saved session
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+            try {
+                  const state = JSON.parse(saved);
+                  remainingArgs = state.remainingArgs;
+                  initialDuration = state.initialDuration;
+                  isRunning = state.isRunning;
+                  isPaused = state.isPaused;
+                  currentSubjectId = state.currentSubjectId;
+                  currentTopicId = state.currentTopicId;
+                  isZenMode = state.isZenMode;
+
+                  // If it was running, account for time passed
+                  if (isRunning && !isPaused && state.lastUpdated) {
+                        const secondsPassed = Math.floor((Date.now() - state.lastUpdated) / 1000);
+                        remainingArgs = Math.max(0, remainingArgs - secondsPassed);
+                  }
+
+                  if (remainingArgs <= 0 && isRunning) {
+                        // Timer finished while browser was closed
+                        finishTimer();
+                  } else if (isRunning) {
+                        // Restore UI state
+                        setupView.classList.add('hidden');
+                        countdownView.classList.remove('hidden');
+                        selectSub.value = currentSubjectId;
+                        selectSub.disabled = true;
+
+                        // Trigger topic population
+                        selectSub.dispatchEvent(new Event('change'));
+                        if (currentTopicId) {
+                              selectTopic.value = currentTopicId;
+                        }
+                        selectTopic.disabled = true;
+                        chkZen.checked = isZenMode;
+
+                        if (isPaused) {
+                              document.getElementById('timer-status').textContent = 'PAUSED';
+                              document.getElementById('timer-status').className = 'px-3 py-1 bg-yellow-500/20 text-yellow-500 rounded-full text-xs font-mono';
+                              renderControls('paused');
+                        } else {
+                              document.getElementById('timer-status').textContent = 'FOCUS MODE';
+                              document.getElementById('timer-status').className = 'px-3 py-1 bg-primary/20 text-primary rounded-full text-xs font-mono animate-pulse';
+                              renderControls('running');
+                              runInterval();
+
+                              if (isZenMode) {
+                                    zenOverlay.classList.remove('hidden');
+                                    zenOverlay.classList.remove('opacity-0');
+                              }
+                        }
+                        updateDisplay();
+                  }
+            } catch (e) {
+                  console.error("Failed to restore session", e);
+                  clearTimerState();
+            }
+      }
 }
