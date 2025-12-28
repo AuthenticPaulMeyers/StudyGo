@@ -81,7 +81,7 @@ export function renderTimer(db) {
                  </div>
 
                  <div id="countdown-view" class="hidden transition-all duration-300">
-                     <div id="timer-display" class="text-6xl md:text-8xl font-mono font-bold text-center tracking-wider text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 drop-shadow-2xl">
+                     <div id="timer-display" class="text-5xl md:text-8xl font-mono font-bold text-center tracking-wider text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 drop-shadow-2xl">
                         00:00:00
                      </div>
                  </div>
@@ -133,7 +133,7 @@ export function renderTimer(db) {
                      <circle cx="160" cy="160" r="150" stroke="currentColor" stroke-width="4" fill="transparent" class="text-primary transition-all duration-1000 ease-linear" stroke-dasharray="942" stroke-dashoffset="0" stroke-linecap="round" id="zen-progress" />
                  </svg>
                  <div class="absolute inset-0 flex items-center justify-center">
-                      <span id="zen-display" class="text-6xl font-mono font-bold text-white tracking-widest">00:00</span>
+                      <span id="zen-display" class="text-5xl font-mono font-bold text-white tracking-widest">00:00</span>
                  </div>
              </div>
 

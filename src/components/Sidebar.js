@@ -46,7 +46,7 @@ export function renderSidebar(activeView = 'dashboard', isCollapsed = false) {
                 
                 <!-- Active Indicator (Right Bar) -->
                 ${activeView === item.id ? `<div class="absolute top-0 md:top-auto md:right-0 md:h-full w-full h-1 md:w-1 rounded-full bg-${item.color} shadow-[0_0_10px_currentColor] md:block hidden"></div>` : ''}
-                <span class="text-[10px] font-medium md:hidden" >${item.label}</span>
+                <span class="text-[10px] font-medium md:hidden text-center" >${item.label}</span>
             </button>
 
         `).join('')}
