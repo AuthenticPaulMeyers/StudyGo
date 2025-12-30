@@ -1,4 +1,5 @@
 import './style.css';
+import { inject } from '@vercel/analytics';
 import { renderSidebar } from './components/Sidebar.js';
 import { renderDashboard, initDashboardLogic } from './components/Dashboard.js';
 import { renderTimer, initTimerLogic } from './components/Timer.js';
@@ -7,6 +8,9 @@ import { renderSubjects, initSubjectsLogic } from './components/Subjects.js';
 import { supabase, getDB } from './utils/storage.js';
 import { showToast } from './components/Toast.js';
 import { showConfirm } from './components/ConfirmModal.js';
+
+// Initialize Vercel Web Analytics
+inject();
 
 const sidebarContainer = document.querySelector('#sidebar');
 const mainContent = document.querySelector('#main-content');
