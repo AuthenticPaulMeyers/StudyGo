@@ -69,13 +69,13 @@ export function renderActivityGraph(db) {
                       <!-- Legend -->
                       <div class="flex items-center justify-end gap-2 text-xs text-slate-400 mt-4 overflow-x-auto whitespace-nowrap">
                            <span>Less</span>
-                           <div class="flex gap-[3px] shrink-0">
-                                <div class="w-[10px] h-[10px] rounded-[2px] bg-[#161b22]"></div>
-                                <div class="w-[10px] h-[10px] rounded-[2px] bg-[#0e4429]"></div>
-                                <div class="w-[10px] h-[10px] rounded-[2px] bg-[#006d32]"></div>
-                                <div class="w-[10px] h-[10px] rounded-[2px] bg-[#26a641]"></div>
-                                <div class="w-[10px] h-[10px] rounded-[2px] bg-[#39d353]"></div>
-                           </div>
+                            <div class="flex gap-[3px] shrink-0">
+                                <div class="w-[10px] h-[10px] rounded-[2px] bg-[#1e293b] border border-white/5"></div>
+                                <div class="w-[10px] h-[10px] rounded-[2px] bg-[#312e81]"></div>
+                                <div class="w-[10px] h-[10px] rounded-[2px] bg-[#4338ca]"></div>
+                                <div class="w-[10px] h-[10px] rounded-[2px] bg-[#6366f1]"></div>
+                                <div class="w-[10px] h-[10px] rounded-[2px] bg-[#818cf8]"></div>
+                            </div>
                            <span>More</span>
                       </div>
                   </div>
@@ -296,12 +296,12 @@ function renderGithubGrid(db) {
             const duration = map[dateStr] || 0;
             const hours = duration / 3600;
 
-            // Color Logic (GitHub Dark Mode Palette)
-            let bgColor = 'bg-[#161b22] border border-white/5';
-            if (hours > 0) bgColor = 'bg-[#0e4429] border-transparent';
-            if (hours > 1) bgColor = 'bg-[#006d32] border-transparent';
-            if (hours > 3) bgColor = 'bg-[#26a641] border-transparent';
-            if (hours > 5) bgColor = 'bg-[#39d353] border-transparent';
+            // Color Logic (Thematic Indigo Scale)
+            let bgColor = 'bg-[#1e293b] border border-white/5';
+            if (hours > 0) bgColor = 'bg-[#312e81] border-transparent';
+            if (hours > 1) bgColor = 'bg-[#4338ca] border-transparent';
+            if (hours > 3) bgColor = 'bg-[#6366f1] border-transparent shadow-[0_0_8px_rgba(99,102,241,0.3)]';
+            if (hours > 5) bgColor = 'bg-[#818cf8] border-transparent shadow-[0_0_12px_rgba(129,140,248,0.4)]';
 
             const tooltip = `${format(date, 'MMM d, yyyy')}: ${Math.round(hours * 10) / 10} hrs`;
 
